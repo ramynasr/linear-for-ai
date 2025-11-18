@@ -13,21 +13,12 @@ export class MarkdownFormatter {
     }
 
     // Table header
-    lines.push('ID        Title              Status        Assignee  Priority  URL');
-    lines.push('--------  -----------------  ------------  --------  --------  -----------------------------------------');
+    lines.push('| ID | Title | URL |');
+    lines.push('|----|-------|-----|');
 
     // Table rows
     result.items.forEach(issue => {
-      const id = this.truncate(issue.id, 8);
-      const title = this.truncate(issue.title, 17);
-      const status = this.truncate(issue.status, 12);
-      const assignee = this.truncate(issue.assignee || '-', 8);
-      const priority = this.truncate(issue.priority || '-', 8);
-
-      lines.push(
-        `${this.pad(id, 8)}  ${this.pad(title, 17)}  ${this.pad(status, 12)}  ` +
-        `${this.pad(assignee, 8)}  ${this.pad(priority, 8)}  ${issue.url}`
-      );
+      lines.push(`| ${issue.id} | ${issue.title} | ${issue.url} |`);
     });
 
     // Pagination info
@@ -78,20 +69,11 @@ export class MarkdownFormatter {
       return lines.join('\n');
     }
 
-    lines.push('ID        Name               Progress  Start Date  Target Date  URL');
-    lines.push('--------  -----------------  --------  ----------  -----------  -----------------------------------------');
+    lines.push('| ID | Title | URL |');
+    lines.push('|----|-------|-----|');
 
     result.items.forEach(project => {
-      const id = this.truncate(project.id, 8);
-      const name = this.truncate(project.name, 17);
-      const progress = `${Math.round(project.progress * 100)}%`;
-      const startDate = project.startDate ? project.startDate.substring(0, 10) : '-';
-      const targetDate = project.targetDate ? project.targetDate.substring(0, 10) : '-';
-
-      lines.push(
-        `${this.pad(id, 8)}  ${this.pad(name, 17)}  ${this.pad(progress, 8)}  ` +
-        `${this.pad(startDate, 10)}  ${this.pad(targetDate, 11)}  ${project.url}`
-      );
+      lines.push(`| ${project.id} | ${project.name} | ${project.url} |`);
     });
 
     return lines.join('\n');
@@ -129,20 +111,13 @@ export class MarkdownFormatter {
       return lines.join('\n');
     }
 
-    lines.push('ID        Name               Starts      Ends        Progress  URL');
-    lines.push('--------  -----------------  ----------  ----------  --------  -----------------------------------------');
+    lines.push('| ID | Title | URL |');
+    lines.push('|----|-------|-----|');
 
     result.items.forEach(cycle => {
-      const id = this.truncate(cycle.id, 8);
-      const name = this.truncate(cycle.name, 17);
-      const starts = cycle.startsAt.substring(0, 10);
-      const ends = cycle.endsAt.substring(0, 10);
-      const progress = `${Math.round(cycle.progress * 100)}%`;
-
-      lines.push(
-        `${this.pad(id, 8)}  ${this.pad(name, 17)}  ${this.pad(starts, 10)}  ` +
-        `${this.pad(ends, 10)}  ${this.pad(progress, 8)}  ${cycle.url}`
-      );
+      // Use name as title, or "Unnamed" if empty
+      const title = cycle.name || 'Unnamed';
+      lines.push(`| ${cycle.id} | ${title} | ${cycle.url} |`);
     });
 
     return lines.join('\n');
@@ -173,25 +148,14 @@ export class MarkdownFormatter {
       return lines.join('\n');
     }
 
-    lines.push('ID        Key       Name');
-    lines.push('--------  --------  --------------------------------------------------');
+    lines.push('| ID | Title | URL |');
+    lines.push('|----|-------|-----|');
 
     result.items.forEach(team => {
-      const id = this.truncate(team.id, 8);
-      const key = this.truncate(team.key, 8);
-
-      lines.push(`${this.pad(id, 8)}  ${this.pad(key, 8)}  ${team.name}`);
+      lines.push(`| ${team.id} | ${team.name} | ${team.url} |`);
     });
 
     return lines.join('\n');
   }
 
-  private static truncate(str: string, maxLen: number): string {
-    if (str.length <= maxLen) return str;
-    return str.substring(0, maxLen - 3) + '...';
-  }
-
-  private static pad(str: string, width: number): string {
-    return str + ' '.repeat(Math.max(0, width - str.length));
-  }
 }

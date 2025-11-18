@@ -29,6 +29,7 @@ export function createTeamsCommand(
           name: team.name,
           key: team.key,
           description: team.description,
+          url: `https://linear.app/team/${team.key}`,
         }));
 
         const result: ListResult<Team> = {

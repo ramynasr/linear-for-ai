@@ -36,6 +36,7 @@ export interface Team {
   name: string;
   key: string;
   description?: string;
+  url: string;
 }
 
 export interface PaginationInfo {
