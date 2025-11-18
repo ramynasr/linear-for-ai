@@ -75,9 +75,82 @@ Create `~/.config/linear-for-ai/config.json`:
 
 See [design document](../internal-docs/design.md) for all configuration options.
 
+## Available Commands
+
+### Issues
+
+```bash
+# List all issues (with pagination)
+node packages/cli/dist/cli.js issues list
+
+# List issues with custom limit
+node packages/cli/dist/cli.js issues list --limit 20
+
+# Fetch all issues (all pages)
+node packages/cli/dist/cli.js issues list --fetch-all
+
+# Show specific issue by identifier
+node packages/cli/dist/cli.js issues show ENG-123
+```
+
+### Projects
+
+```bash
+# List all projects
+node packages/cli/dist/cli.js projects list
+
+# Show specific project
+node packages/cli/dist/cli.js projects show <project-id>
+```
+
+### Cycles
+
+```bash
+# List all cycles
+node packages/cli/dist/cli.js cycles list
+
+# Show specific cycle
+node packages/cli/dist/cli.js cycles show <cycle-id>
+
+# Show current active cycle
+node packages/cli/dist/cli.js cycles current
+
+# Show current cycle for specific team
+node packages/cli/dist/cli.js cycles current --team <team-id>
+```
+
+### Teams
+
+```bash
+# List all teams
+node packages/cli/dist/cli.js teams list
+```
+
+### Output Formats
+
+```bash
+# Default markdown output (human-readable tables)
+node packages/cli/dist/cli.js issues list
+
+# JSON output (for machine parsing)
+node packages/cli/dist/cli.js --format json issues list
+```
+
+### Pagination
+
+```bash
+# Set page size
+node packages/cli/dist/cli.js issues list --limit 10
+
+# Use cursor for next page
+node packages/cli/dist/cli.js issues list --cursor abc123
+
+# Fetch all pages at once
+node packages/cli/dist/cli.js issues list --fetch-all
+```
+
 ## Next Steps
 
-- **Phase 2:** Read operations (issues, projects, cycles)
 - **Phase 3:** Advanced queries and filtering
 - **Phase 4:** Write operations with confirmation
 
