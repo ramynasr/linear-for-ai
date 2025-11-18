@@ -6,6 +6,7 @@ import { Config, EnvironmentConfig } from './config/types.js';
 import { createIssuesCommand } from './commands/issues.js';
 import { createProjectsCommand } from './commands/projects.js';
 import { createCyclesCommand } from './commands/cycles.js';
+import { createTeamsCommand } from './commands/teams.js';
 import { LinearClient } from './lib/client.js';
 
 const program = new Command();
@@ -37,16 +38,7 @@ async function main() {
     program.addCommand(createIssuesCommand(env, finalConfig, opts.debug));
     program.addCommand(createProjectsCommand(env, finalConfig, opts.debug));
     program.addCommand(createCyclesCommand(env, finalConfig, opts.debug));
-
-    // Placeholder commands - will be implemented in later phases
-
-    program
-      .command('teams')
-      .description('Manage teams')
-      .action(() => {
-        console.log('Teams commands not yet implemented');
-        process.exit(0);
-      });
+    program.addCommand(createTeamsCommand(env, finalConfig, opts.debug));
 
     // Test connection command
     program
