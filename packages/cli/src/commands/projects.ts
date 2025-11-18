@@ -3,6 +3,7 @@ import { LinearClient } from '../lib/client.js';
 import { Config, EnvironmentConfig } from '../config/types.js';
 import { MarkdownFormatter, JSONFormatter, Project, ListResult } from '../lib/formatters/index.js';
 import { NotFoundError } from '../lib/errors.js';
+import { extractProjectIdentifier } from '../lib/url-parser.js';
 
 export function createProjectsCommand(
   env: EnvironmentConfig,
@@ -39,6 +40,7 @@ export function createProjectsCommand(
           startDate: project.startDate,
           targetDate: project.targetDate,
           url: project.url,
+          slugId: project.slugId,
         }));
 
         const result: ListResult<Project> = {
@@ -61,19 +63,39 @@ export function createProjectsCommand(
 
   // projects show
   command
-    .command('show <id>')
-    .description('Show project details')
-    .action(async (id: string) => {
+    .command('show <idOrUrl>')
+    .description('Show project details (accepts UUID or Linear URL)')
+    .action(async (idOrUrl: string) => {
       const format = command.parent?.opts().format || 'markdown';
       const client = new LinearClient({ env, config, debug });
 
       try {
-        const response = await client.executeQuery(async (sdk) => {
-          return sdk.project(id);
-        });
+        const identifier = extractProjectIdentifier(idOrUrl);
+        let response: any;
 
-        if (!response) {
-          throw new NotFoundError(`Project ${id} not found`, { id });
+        if (identifier.type === 'slugId') {
+          // Query by slugId using filter
+          const results = await client.executeQuery(async (sdk) => {
+            return sdk.projects({
+              filter: { slugId: { eq: identifier.value } },
+              first: 1
+            });
+          });
+
+          if (results.nodes.length === 0) {
+            throw new NotFoundError(`Project with URL slug ${identifier.value} not found`, { slugId: identifier.value });
+          }
+
+          response = results.nodes[0];
+        } else {
+          // Query by UUID
+          response = await client.executeQuery(async (sdk) => {
+            return sdk.project(identifier.value);
+          });
+
+          if (!response) {
+            throw new NotFoundError(`Project ${identifier.value} not found`, { id: identifier.value });
+          }
         }
 
         const project: Project = {
@@ -84,6 +106,7 @@ export function createProjectsCommand(
           startDate: response.startDate,
           targetDate: response.targetDate,
           url: response.url,
+          slugId: response.slugId,
         };
 
         if (format === 'json') {

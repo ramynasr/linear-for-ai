@@ -3,6 +3,7 @@ import { LinearClient } from '../lib/client.js';
 import { Config, EnvironmentConfig } from '../config/types.js';
 import { MarkdownFormatter, JSONFormatter, Issue, ListResult } from '../lib/formatters/index.js';
 import { NotFoundError } from '../lib/errors.js';
+import { extractIssueIdentifier } from '../lib/url-parser.js';
 
 export function createIssuesCommand(
   env: EnvironmentConfig,
@@ -79,19 +80,20 @@ export function createIssuesCommand(
 
   // issues show
   command
-    .command('show <id>')
-    .description('Show issue details')
-    .action(async (id: string) => {
+    .command('show <idOrUrl>')
+    .description('Show issue details (accepts identifier like ENG-123 or Linear URL)')
+    .action(async (idOrUrl: string) => {
       const format = command.parent?.opts().format || 'markdown';
       const client = new LinearClient({ env, config, debug });
 
       try {
+        const identifier = extractIssueIdentifier(idOrUrl);
         const response = await client.executeQuery(async (sdk) => {
-          return sdk.issue(id);
+          return sdk.issue(identifier);
         });
 
         if (!response) {
-          throw new NotFoundError(`Issue ${id} not found`, { id });
+          throw new NotFoundError(`Issue ${identifier} not found`, { id: identifier });
         }
 
         const state = await response.state;

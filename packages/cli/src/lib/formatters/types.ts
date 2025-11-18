@@ -20,6 +20,7 @@ export interface Project {
   startDate?: string;
   targetDate?: string;
   url: string;
+  slugId?: string;
 }
 
 export interface Cycle {

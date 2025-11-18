@@ -3,6 +3,7 @@ import { LinearClient } from '../lib/client.js';
 import { Config, EnvironmentConfig } from '../config/types.js';
 import { MarkdownFormatter, JSONFormatter, Cycle, ListResult } from '../lib/formatters/index.js';
 import { NotFoundError } from '../lib/errors.js';
+import { extractCycleIdentifier } from '../lib/url-parser.js';
 
 export function createCyclesCommand(
   env: EnvironmentConfig,
@@ -60,19 +61,20 @@ export function createCyclesCommand(
 
   // cycles show
   command
-    .command('show <id>')
-    .description('Show cycle details')
-    .action(async (id: string) => {
+    .command('show <idOrUrl>')
+    .description('Show cycle details (accepts UUID or Linear URL)')
+    .action(async (idOrUrl: string) => {
       const format = command.parent?.opts().format || 'markdown';
       const client = new LinearClient({ env, config, debug });
 
       try {
+        const identifier = extractCycleIdentifier(idOrUrl);
         const response = await client.executeQuery(async (sdk) => {
-          return sdk.cycle(id);
+          return sdk.cycle(identifier);
         });
 
         if (!response) {
-          throw new NotFoundError(`Cycle ${id} not found`, { id });
+          throw new NotFoundError(`Cycle ${identifier} not found`, { id: identifier });
         }
 
         const cycle: Cycle = {
