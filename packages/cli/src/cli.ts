@@ -25,6 +25,30 @@ program
 
 // Async main function to handle config loading
 async function main() {
+  // Check if user is requesting help or version before loading config
+  const args = process.argv.slice(2);
+  const isHelpRequest = args.includes('--help') || args.includes('-h') || args.length === 0;
+  const isVersionRequest = args.includes('--version') || args.includes('-V');
+
+  // If help or version, add commands without loading config
+  if (isHelpRequest || isVersionRequest) {
+    // Add command stubs for help display (they won't be executed)
+    const dummyEnv = {} as EnvironmentConfig;
+    const dummyConfig = { defaults: { limit: 50 } } as Config;
+
+    program.addCommand(createIssuesCommand(dummyEnv, dummyConfig, false));
+    program.addCommand(createProjectsCommand(dummyEnv, dummyConfig, false));
+    program.addCommand(createCyclesCommand(dummyEnv, dummyConfig, false));
+    program.addCommand(createTeamsCommand(dummyEnv, dummyConfig, false));
+
+    program
+      .command('test-connection')
+      .description('Test connection to Linear API');
+
+    await program.parseAsync();
+    return;
+  }
+
   const opts = program.opts();
   const format = opts.format as 'markdown' | 'json';
 
