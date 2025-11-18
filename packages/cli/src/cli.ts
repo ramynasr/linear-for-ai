@@ -5,6 +5,7 @@ import { ErrorFormatter } from './lib/error-formatter.js';
 import { Config, EnvironmentConfig } from './config/types.js';
 import { createIssuesCommand } from './commands/issues.js';
 import { createProjectsCommand } from './commands/projects.js';
+import { createCyclesCommand } from './commands/cycles.js';
 import { LinearClient } from './lib/client.js';
 
 const program = new Command();
@@ -35,16 +36,9 @@ async function main() {
     // Add resource commands
     program.addCommand(createIssuesCommand(env, finalConfig, opts.debug));
     program.addCommand(createProjectsCommand(env, finalConfig, opts.debug));
+    program.addCommand(createCyclesCommand(env, finalConfig, opts.debug));
 
     // Placeholder commands - will be implemented in later phases
-
-    program
-      .command('cycles')
-      .description('Manage cycles')
-      .action(() => {
-        console.log('Cycles commands not yet implemented');
-        process.exit(0);
-      });
 
     program
       .command('teams')
