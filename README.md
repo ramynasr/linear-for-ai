@@ -12,9 +12,15 @@ git clone https://github.com/ramynasr/linear-for-ai.git
 cd linear-for-ai
 
 # Compile to standalone executable
-deno task compile
+./scripts/build.sh
 
 # Binary available at: ./dist/linear-for-ai
+```
+
+Alternatively, use the Deno task:
+
+```bash
+deno task compile
 ```
 
 ## Configuration
