@@ -2,6 +2,61 @@ import type { LinearProject, LinearConnection } from '../../types/linear.ts';
 import { formatTable, formatKeyValue, formatSection } from './markdown.ts';
 
 /**
+ * Field definitions mapping field names to human-readable titles
+ */
+const FIELD_DEFINITIONS: Record<string, string> = {
+  id: 'ID',
+  name: 'Name',
+  state: 'State',
+  progress: 'Progress',
+  startDate: 'Start Date',
+  targetDate: 'Target Date',
+  createdAt: 'Created',
+  updatedAt: 'Updated',
+  url: 'URL',
+};
+
+/**
+ * Format a field value for display
+ */
+function formatFieldValue(project: LinearProject, field: string): string {
+  const value = project[field as keyof LinearProject];
+
+  if (value === null || value === undefined) {
+    return 'N/A';
+  }
+
+  // Special formatting for specific fields
+  if (field === 'progress' && typeof value === 'number') {
+    return `${value}%`;
+  }
+
+  if ((field === 'startDate' || field === 'targetDate' || field === 'createdAt' || field === 'updatedAt') && typeof value === 'string') {
+    return new Date(value).toLocaleDateString();
+  }
+
+  return String(value);
+}
+
+/**
+ * Get available fields from the first node
+ */
+function getAvailableFields(nodes: LinearProject[]): string[] {
+  if (nodes.length === 0) return [];
+
+  const firstNode = nodes[0];
+  const availableFields: string[] = [];
+
+  for (const field of Object.keys(FIELD_DEFINITIONS)) {
+    if (field in firstNode && firstNode[field as keyof LinearProject] !== undefined) {
+      availableFields.push(field);
+    }
+  }
+
+  return availableFields;
+}
+
+/**
  * Format projects list for output
  */
 export function formatProjectsList(
@@ -22,14 +77,12 @@ export function formatProjectsList(
     return '## Projects\n\nNo projects found.';
   }
 
-  const headers = ['Name', 'State', 'Progress', 'Target Date', 'URL'];
-  const rows = nodes.map((project) => [
-    project.name || '',
-    project.state || 'N/A',
-    project.progress !== undefined ? `${project.progress}%` : 'N/A',
-    project.targetDate || 'N/A',
-    project.url || '',
-  ]);
+  // Determine which fields are present in the data
+  const fields = getAvailableFields(nodes);
+  const headers = fields.map((field) => FIELD_DEFINITIONS[field]);
+  const rows = nodes.map((project) =>
+    fields.map((field) => formatFieldValue(project, field))
+  );
 
   const table = formatTable(headers, rows);
   const header = `## Projects (${nodes.length} result${nodes.length === 1 ? '' : 's'})`;

@@ -2,6 +2,48 @@ import type { LinearTeam, LinearConnection } from '../../types/linear.ts';
 import { formatTable, formatKeyValue, formatSection } from './markdown.ts';
 
 /**
+ * Field definitions mapping field names to human-readable titles
+ */
+const FIELD_DEFINITIONS: Record<string, string> = {
+  id: 'ID',
+  key: 'Key',
+  name: 'Name',
+  description: 'Description',
+  url: 'URL',
+};
+
+/**
+ * Format a field value for display
+ */
+function formatFieldValue(team: LinearTeam, field: string): string {
+  const value = team[field as keyof LinearTeam];
+
+  if (value === null || value === undefined) {
+    return 'N/A';
+  }
+
+  return String(value);
+}
+
+/**
+ * Get available fields from the first node
+ */
+function getAvailableFields(nodes: LinearTeam[]): string[] {
+  if (nodes.length === 0) return [];
+
+  const firstNode = nodes[0];
+  const availableFields: string[] = [];
+
+  for (const field of Object.keys(FIELD_DEFINITIONS)) {
+    if (field in firstNode && firstNode[field as keyof LinearTeam] !== undefined) {
+      availableFields.push(field);
+    }
+  }
+
+  return availableFields;
+}
+
+/**
  * Format teams list for output
  */
 export function formatTeamsList(
@@ -22,12 +64,12 @@ export function formatTeamsList(
     return '## Teams\n\nNo teams found.';
   }
 
-  const headers = ['Key', 'Name', 'URL'];
-  const rows = nodes.map((team) => [
-    team.key || '',
-    team.name || '',
-    team.url || '',
-  ]);
+  // Determine which fields are present in the data
+  const fields = getAvailableFields(nodes);
+  const headers = fields.map((field) => FIELD_DEFINITIONS[field]);
+  const rows = nodes.map((team) =>
+    fields.map((field) => formatFieldValue(team, field))
+  );
 
   const table = formatTable(headers, rows);
   const header = `## Teams (${nodes.length} result${nodes.length === 1 ? '' : 's'})`;
