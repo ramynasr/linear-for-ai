@@ -27,9 +27,12 @@ export function buildIssuesListQuery(options: IssuesListOptions): string {
   const filterArg = options.filter ? `, filter: ${JSON.stringify(options.filter)}` : '';
   const paginationStr = paginationArgs.length > 0 ? paginationArgs.join(', ') : '';
 
+  // Only include parentheses if there are arguments
+  const argsStr = paginationStr || filterArg ? `(${paginationStr}${filterArg})` : '';
+
   return `
     query {
-      issues(${paginationStr}${filterArg}) {
+      issues${argsStr} {
         nodes {
           ${buildFieldsString(fields)}
         }

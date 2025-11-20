@@ -9,6 +9,15 @@ Deno.test('buildIssuesListQuery - generates basic query', () => {
   assertStringIncludes(query, 'pageInfo');
 });
 
+Deno.test('buildIssuesListQuery - does not include empty parentheses when no parameters', () => {
+  const query = buildIssuesListQuery({});
+  // Should have "issues {" not "issues() {"
+  assertStringIncludes(query, 'issues {');
+  if (query.includes('issues()')) {
+    throw new Error('Query should not contain empty parentheses "issues()"');
+  }
+});
+
 Deno.test('buildIssuesListQuery - includes requested fields', () => {
   const query = buildIssuesListQuery({ fields: ['id', 'title', 'url'] });
   assertStringIncludes(query, 'id');
