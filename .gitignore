@@ -1,32 +1,32 @@
-# Dependencies
-node_modules/
-
-# Build output
-dist/
-*.tsbuildinfo
+# Deno
+.deno/
+deno.lock
 
 # Environment
 .env
-.env.local
+*.local
 
-# Internal docs (transient)
+# Build outputs
+dist/
+*.exe
+
+# Internal docs (per CLAUDE.md)
 internal-docs/
+
+# Dependencies (if using npm modules)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
-.DS_Store
-Thumbs.db
+*~
 
 # Testing
 coverage/
 .nyc_output/
-
-# Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
