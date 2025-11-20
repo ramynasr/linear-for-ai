@@ -3,8 +3,9 @@ import { formatTable, formatKeyValue, formatSection } from './markdown.ts';
 
 /**
  * Field definitions mapping field names to human-readable titles
+ * Nested objects indicate complex fields with sub-properties
  */
-const FIELD_DEFINITIONS: Record<string, string> = {
+const FIELD_DEFINITIONS: Record<string, string | Record<string, string>> = {
   id: 'ID',
   identifier: 'ID',
   title: 'Title',
@@ -14,16 +15,30 @@ const FIELD_DEFINITIONS: Record<string, string> = {
   createdAt: 'Created',
   updatedAt: 'Updated',
   url: 'URL',
-};
-
-/**
- * Nested field definitions for complex objects
- */
-const NESTED_FIELD_DEFINITIONS: Record<string, Record<string, string>> = {
   state: { name: 'Status' },
   assignee: { displayName: 'Assignee', email: 'Assignee Email' },
   creator: { displayName: 'Creator', email: 'Creator Email' },
 };
+
+/**
+ * Get human-readable title for a field
+ */
+function getFieldTitle(field: string): string {
+  const definition = FIELD_DEFINITIONS[field];
+
+  if (!definition) {
+    // Unknown field - use field name as title
+    return field;
+  }
+
+  if (typeof definition === 'object') {
+    // Nested field - use the first nested property's title
+    const nestedField = Object.keys(definition)[0];
+    return definition[nestedField];
+  }
+
+  return definition;
+}
 
 /**
  * Format a field value for display
@@ -36,12 +51,10 @@ function formatFieldValue(issue: LinearIssue, field: string): string {
   }
 
   // Handle nested fields
-  if (field === 'state' && typeof value === 'object' && value !== null) {
-    return (value as any).name || 'N/A';
-  }
-
-  if ((field === 'assignee' || field === 'creator') && typeof value === 'object' && value !== null) {
-    return (value as any).displayName || 'N/A';
+  const definition = FIELD_DEFINITIONS[field];
+  if (typeof definition === 'object' && typeof value === 'object' && value !== null) {
+    const nestedField = Object.keys(definition)[0];
+    return (value as any)[nestedField] || 'N/A';
   }
 
   // Handle dates
@@ -61,16 +74,11 @@ function getAvailableFields(nodes: LinearIssue[]): string[] {
   const firstNode = nodes[0];
   const availableFields: string[] = [];
 
-  for (const field of Object.keys(FIELD_DEFINITIONS)) {
-    if (field in firstNode && firstNode[field as keyof LinearIssue] !== undefined) {
+  // Include all fields that exist in the data, regardless of whether they're in FIELD_DEFINITIONS
+  for (const field of Object.keys(firstNode)) {
+    const value = firstNode[field as keyof LinearIssue];
+    if (value !== undefined && value !== null) {
       availableFields.push(field);
-    }
-  }
-
-  // Check for nested fields
-  for (const [parentField, _nestedFields] of Object.entries(NESTED_FIELD_DEFINITIONS)) {
-    if (parentField in firstNode && firstNode[parentField as keyof LinearIssue] !== undefined) {
-      availableFields.push(parentField);
     }
   }
 
@@ -100,14 +108,7 @@ export function formatIssuesList(
 
   // Determine which fields are present in the data
   const fields = getAvailableFields(nodes);
-  const headers = fields.map((field) => {
-    // Handle nested fields
-    if (field in NESTED_FIELD_DEFINITIONS) {
-      const nestedField = Object.keys(NESTED_FIELD_DEFINITIONS[field])[0];
-      return NESTED_FIELD_DEFINITIONS[field][nestedField];
-    }
-    return FIELD_DEFINITIONS[field];
-  });
+  const headers = fields.map((field) => getFieldTitle(field));
   const rows = nodes.map((issue) =>
     fields.map((field) => formatFieldValue(issue, field))
   );
