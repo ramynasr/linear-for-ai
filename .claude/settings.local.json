@@ -5,7 +5,8 @@
       "WebFetch(domain:linear.app)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:studio.apollographql.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:developers.linear.app)"
     ],
     "deny": [],
     "ask": []

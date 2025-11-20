@@ -24,9 +24,9 @@ export function formatTeamsList(
 
   const headers = ['Key', 'Name', 'URL'];
   const rows = nodes.map((team) => [
-    team.key,
-    team.name,
-    team.url,
+    team.key || '',
+    team.name || '',
+    team.url || '',
   ]);
 
   const table = formatTable(headers, rows);

@@ -11,10 +11,12 @@ CLI tool (npm package: `linear-for-ai`) for AI agents to interact with Linear's 
 ## Core Principles
 
 **API Integration:**
-- Use @linear/sdk as primary interface
-- Fallback to direct GraphQL internally when SDK limitations found
+- Direct GraphQL client for all API interactions (custom `GraphQLClient` class)
+- Dynamic field selection to minimize token usage (core project goal)
+- No external SDK dependency - maintains smallest executable size
 - Raw GraphQL NOT exposed as CLI command yet (internal use only)
 - API key from `LINEAR_API_KEY` environment variable or .env file
+- See `./internal-docs/sdk-evaluation.md` for reasoning behind not using @linear/sdk
 
 **Output Design:**
 - Default: Terminal-optimized markdown (aligned columns, no colors in regular output)
@@ -36,31 +38,40 @@ CLI tool (npm package: `linear-for-ai`) for AI agents to interact with Linear's 
 
 ## Package Structure
 
-**pnpm workspace:**
+**Deno project:**
 ```
 linear-for-ai/
-├── packages/cli/        # Main CLI package
-├── docs/               # User documentation (versioned)
-├── internal-docs/      # Design docs (git-ignored)
-├── .env.example        # Example environment variables
-├── pnpm-workspace.yaml
-└── package.json        # Root workspace config
+├── src/                # Source code
+│   ├── cli.ts         # Main CLI entry point
+│   ├── commands/      # Command implementations
+│   ├── lib/           # Core libraries (GraphQL client, queries, formatters)
+│   └── types/         # TypeScript type definitions
+├── tests/             # Test files
+├── docs/              # User documentation (versioned)
+├── internal-docs/     # Design docs (git-ignored)
+├── .env.example       # Example environment variables
+├── deno.json          # Deno configuration
+└── scripts/           # Build and utility scripts
 ```
 
-**Executable:** `linear-for-ai` (via bin entry in packages/cli/package.json)
+**Executable:** `linear-for-ai` (compiled via `deno compile` to standalone binary)
 
 ## Directory Rules
 
 **Versioned (commit these):**
-- `./packages/` - All source packages
+- `./src/` - All source code
+- `./tests/` - All test files
 - `./docs/` - User documentation
+- `./scripts/` - Build and utility scripts
 - `./.env.example` - Example environment variables
+- `./deno.json` - Deno configuration
 - `./CLAUDE.md` - This file
 - `./README.md`, `./LICENSE`
 
 **Ignored (never commit):**
 - `./internal-docs/` - Design docs, plans, transient artifacts
-- `./node_modules/` - Dependencies
+- `./dist/` - Compiled binaries
+- `./coverage/` - Test coverage reports
 - `./.env` - Environment variables with secrets
 - Any files with real API keys or workspace identifiers
 
@@ -149,10 +160,12 @@ With `--yes` flag:
 - Validate design decisions before coding
 
 **Code style:**
-- TypeScript strict mode
-- ESM modules
+- TypeScript strict mode (enforced by Deno)
+- Deno-style imports (ESM only)
 - Descriptive variable names
 - Comments for complex logic only
+- Follow Deno formatting: `deno fmt`
+- Follow Deno linting: `deno lint`
 
 **Testing:**
 - Write unit tests for pure functions
@@ -171,7 +184,7 @@ With `--yes` flag:
 - Store API keys in config.json
 
 **Do:**
-- Use `dotenv` for .env file support
+- Use Deno's standard library for .env file support (@std/dotenv)
 - Include web URLs in all object outputs
 - Format tables for terminal display
 - Validate all user inputs
@@ -179,11 +192,13 @@ With `--yes` flag:
 - Format errors in both human and structured forms
 - Test against recorded fixtures first
 - Respect proxy configuration
+- Keep executable size minimal by avoiding unnecessary dependencies
 
 ## References
 
 - Design: `./internal-docs/design.md`
-- Linear SDK: `./docs/linear-docs/_generated_sdk.ts`
+- SDK Evaluation: `./internal-docs/sdk-evaluation.md`
 - GraphQL Schema: `./docs/linear-docs/schema.graphql`
 - API Docs: https://linear.app/developers/graphql
 - Repository: https://github.com/ramynasr/linear-for-ai
+- Deno: https://deno.land/

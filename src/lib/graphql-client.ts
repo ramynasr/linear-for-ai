@@ -33,7 +33,7 @@ export class GraphQLClient {
    */
   getHeaders(): Headers {
     const headers = new Headers();
-    headers.set('Authorization', `Bearer ${this.apiKey}`);
+    headers.set('Authorization', this.apiKey);
     headers.set('Content-Type', 'application/json');
     return headers;
   }
@@ -79,7 +79,7 @@ export class GraphQLClient {
     console.error('\n[DEBUG] GraphQL Request');
     console.error(`POST ${this.endpoint}`);
     console.error('Headers:');
-    console.error(`  Authorization: Bearer ${this.getRedactedKey()}`);
+    console.error(`  Authorization: ${this.getRedactedKey()}`);
     console.error(`  Content-Type: application/json`);
     console.error('Body:');
     console.error(JSON.stringify(request, null, 2));

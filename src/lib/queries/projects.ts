@@ -18,6 +18,9 @@ export function buildProjectsListQuery(options: ProjectsListOptions): string {
   const fields = options.fields || [
     'id',
     'name',
+    'state',
+    'progress',
+    'targetDate',
     'url',
   ];
 

@@ -15,6 +15,6 @@ Deno.test('GraphQLClient - redacts API key in debug mode', () => {
 Deno.test('GraphQLClient - constructs request headers', () => {
   const client = new GraphQLClient('test_key');
   const headers = client.getHeaders();
-  assertEquals(headers.get('Authorization'), 'Bearer test_key');
+  assertEquals(headers.get('Authorization'), 'test_key');
   assertEquals(headers.get('Content-Type'), 'application/json');
 });

@@ -24,11 +24,11 @@ export function formatProjectsList(
 
   const headers = ['Name', 'State', 'Progress', 'Target Date', 'URL'];
   const rows = nodes.map((project) => [
-    project.name,
-    project.state,
-    `${project.progress}%`,
+    project.name || '',
+    project.state || 'N/A',
+    project.progress !== undefined ? `${project.progress}%` : 'N/A',
     project.targetDate || 'N/A',
-    project.url,
+    project.url || '',
   ]);
 
   const table = formatTable(headers, rows);

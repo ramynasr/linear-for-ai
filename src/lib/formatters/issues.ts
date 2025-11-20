@@ -24,11 +24,11 @@ export function formatIssuesList(
 
   const headers = ['ID', 'Title', 'Status', 'Priority', 'URL'];
   const rows = nodes.map((issue) => [
-    issue.identifier,
-    issue.title,
-    issue.state.name,
-    issue.priorityLabel,
-    issue.url,
+    issue.identifier || '',
+    issue.title || '',
+    issue.state?.name || 'N/A',
+    issue.priorityLabel || 'N/A',
+    issue.url || '',
   ]);
 
   const table = formatTable(headers, rows);
