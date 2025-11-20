@@ -12,8 +12,8 @@ class MockGraphQLClient extends GraphQLClient {
     this.mockResponse = mockResponse;
   }
 
-  override async query<T>(): Promise<{ data: T }> {
-    return this.mockResponse as { data: T };
+  override query<T>(): Promise<{ data: T }> {
+    return Promise.resolve(this.mockResponse as { data: T });
   }
 }
 
