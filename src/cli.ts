@@ -62,9 +62,10 @@ async function main() {
     // Output result
     console.log(output);
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    const err = error as Error;
+    console.error(`Error: ${err.message}`);
     if (parsed.options.debug) {
-      console.error(error.stack);
+      console.error(err.stack);
     }
     Deno.exit(1);
   }
