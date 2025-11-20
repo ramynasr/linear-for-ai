@@ -1,0 +1,21 @@
+{
+  "data": {
+    "teams": {
+      "nodes": [
+        {
+          "id": "1",
+          "key": "ENG",
+          "name": "Engineering",
+          "description": "Engineering team working on product development",
+          "url": "https://linear.app/team/ENG"
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "hasPreviousPage": false,
+        "startCursor": null,
+        "endCursor": null
+      }
+    }
+  }
+}
