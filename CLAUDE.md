@@ -183,7 +183,7 @@ With `--yes` flag:
 ## References
 
 - Design: `./internal-docs/design.md`
-- Linear SDK: https://github.com/linear/linear/blob/master/packages/sdk/src/_generated_sdk.ts
-- GraphQL Schema: https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql
+- Linear SDK: `./docs/linear-docs/_generated_sdk.ts`
+- GraphQL Schema: `./docs/linear-docs/schema.graphql`
 - API Docs: https://linear.app/developers/graphql
 - Repository: https://github.com/ramynasr/linear-for-ai

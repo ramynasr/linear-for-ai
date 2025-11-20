@@ -5,6 +5,7 @@ import { loadEnvironment } from './lib/env.ts';
 import { loadConfig } from './lib/config.ts';
 import { GraphQLClient } from './lib/graphql-client.ts';
 import { issuesList, issuesShow } from './commands/issues.ts';
+import { projectsList, projectsShow } from './commands/projects.ts';
 import { HELP_TEXT, VERSION } from './lib/help.ts';
 import type { CommandContext } from './types/cli.ts';
 
@@ -54,6 +55,17 @@ async function main() {
         output = await issuesShow(client, context, parsed.args[0], parsed.options);
       } else {
         throw new Error(`Unknown action for issues: ${parsed.action}`);
+      }
+    } else if (parsed.resource === 'projects') {
+      if (parsed.action === 'list') {
+        output = await projectsList(client, context, parsed.options);
+      } else if (parsed.action === 'show') {
+        if (!parsed.args[0]) {
+          throw new Error('Project ID required for show command');
+        }
+        output = await projectsShow(client, context, parsed.args[0], parsed.options);
+      } else {
+        throw new Error(`Unknown action for projects: ${parsed.action}`);
       }
     } else {
       throw new Error(`Unknown resource: ${parsed.resource}`);
