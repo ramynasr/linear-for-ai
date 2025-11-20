@@ -1,0 +1,43 @@
+{
+  "allowWrites": false,
+  "proxy": {
+    "enabled": false,
+    "url": "http://proxy.example.com:8080"
+  },
+  "defaults": {
+    "format": "markdown",
+    "limit": 50,
+    "fields": {
+      "issues": [
+        "id",
+        "identifier",
+        "title",
+        "state.name",
+        "assignee.displayName",
+        "priority",
+        "priorityLabel",
+        "createdAt",
+        "url"
+      ],
+      "projects": [
+        "id",
+        "name",
+        "progress",
+        "state",
+        "startDate",
+        "targetDate",
+        "lead.displayName",
+        "url"
+      ],
+      "projects list": [
+        "id",
+        "name",
+        "url"
+      ]
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 300
+  }
+}
