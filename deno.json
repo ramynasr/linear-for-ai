@@ -4,8 +4,8 @@
   "exports": "./src/cli.ts",
   "tasks": {
     "dev": "deno run --allow-net --allow-env --allow-read src/cli.ts",
-    "test": "deno test --allow-net --allow-env --allow-read",
-    "test:watch": "deno test --watch --allow-net --allow-env --allow-read",
+    "test": "deno test --allow-net --allow-env --allow-read --allow-write",
+    "test:watch": "deno test --watch --allow-net --allow-env --allow-read --allow-write",
     "compile": "deno compile --allow-net --allow-env --allow-read --output=dist/linear-for-ai src/cli.ts",
     "fmt": "deno fmt",
     "lint": "deno lint",
