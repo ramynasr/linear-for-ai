@@ -1,0 +1,30 @@
+{
+  "data": {
+    "issues": {
+      "nodes": [
+        {
+          "id": "1",
+          "identifier": "ENG-123",
+          "title": "Fix login bug",
+          "priority": 1,
+          "priorityLabel": "High",
+          "state": {
+            "id": "1",
+            "name": "In Progress",
+            "type": "started",
+            "color": "#f2c94c"
+          },
+          "createdAt": "2025-01-15T10:00:00Z",
+          "updatedAt": "2025-01-17T15:30:00Z",
+          "url": "https://linear.app/team/issue/ENG-123"
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "hasPreviousPage": false,
+        "startCursor": null,
+        "endCursor": null
+      }
+    }
+  }
+}
