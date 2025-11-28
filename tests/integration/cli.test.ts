@@ -26,7 +26,7 @@ Deno.test('CLI - shows version with --version flag', async () => {
 });
 
 Deno.test('CLI - errors without API key', async () => {
-  const command = new Deno.Command('deno', {
+  const command = new Deno.Command(Deno.execPath(), {
     args: ['run', '--allow-net', '--allow-env', '--allow-read', 'src/cli.ts', 'issues', 'list'],
     env: { LINEAR_API_KEY: '' },
     clearEnv: true,
