@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { issuesList } from '../../src/commands/issues.ts';
+import { list as issuesList } from '../../src/commands/issues/list/index.ts';
 import { GraphQLClient } from '../../src/lib/graphql-client.ts';
 import { DEFAULT_CONFIG } from '../../src/types/config.ts';
 
