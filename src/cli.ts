@@ -7,7 +7,7 @@ import { GraphQLClient } from './lib/graphql-client.ts';
 import { list as issuesList } from './commands/issues/list/index.ts';
 import { show as issuesShow } from './commands/issues/show/index.ts';
 import { list as projectsList } from './commands/projects/list/index.ts';
-import { projectsShow } from './commands/projects.ts';
+import { show as projectsShow } from './commands/projects/show/index.ts';
 import { teamsList, teamsShow } from './commands/teams.ts';
 import { notificationsList } from './commands/notifications.ts';
 import { HELP_TEXT, VERSION } from './lib/help.ts';
