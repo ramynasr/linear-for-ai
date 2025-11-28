@@ -1,3 +1,5 @@
+import { toGraphQLSyntax } from '../graphql-syntax.ts';
+
 export interface TeamsListOptions {
   fields?: string[];
   limit?: number;
@@ -24,7 +26,7 @@ export function buildTeamsListQuery(options: TeamsListOptions): string {
     paginationArgs.push(`after: "${options.cursor}"`);
   }
 
-  const filterArg = options.filter ? `, filter: ${JSON.stringify(options.filter)}` : '';
+  const filterArg = options.filter ? `, filter: ${toGraphQLSyntax(options.filter)}` : '';
   const paginationStr = paginationArgs.length > 0 ? paginationArgs.join(', ') : '';
 
   // Only include parentheses if there are arguments

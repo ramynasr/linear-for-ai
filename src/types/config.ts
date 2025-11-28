@@ -51,7 +51,7 @@ export const DEFAULT_CONFIG: Config = {
     format: 'markdown',
     limit: 50,
     fields: {
-      issues: ['id', 'identifier', 'title', 'state', 'assignee', 'priority', 'createdAt', 'url'],
+      issues: ['identifier', 'title', 'state.name', 'assignee.name', 'url'],
       projects: ['id', 'name', 'progress', 'startDate', 'targetDate', 'url'],
       'projects list': ['id', 'name', 'url'],
       teams: ['id', 'key', 'name', 'url'],

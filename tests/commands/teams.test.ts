@@ -6,13 +6,15 @@ import { DEFAULT_CONFIG } from '../../src/types/config.ts';
 // Mock GraphQL client for testing
 class MockGraphQLClient extends GraphQLClient {
   private mockResponse: unknown;
+  public lastQuery?: { query: string };
 
   constructor(mockResponse: unknown) {
     super('test_key');
     this.mockResponse = mockResponse;
   }
 
-  override query<T>(): Promise<{ data: T }> {
+  override query<T>(params: { query: string }): Promise<{ data: T }> {
+    this.lastQuery = params;
     return Promise.resolve(this.mockResponse as { data: T });
   }
 }
@@ -61,6 +63,33 @@ Deno.test('teamsList - returns JSON format', async () => {
   const parsed = JSON.parse(result);
   assertEquals(parsed.data.teams.nodes[0].key, 'ENG');
   assertEquals(parsed.data.teams.nodes[0].name, 'Engineering');
+});
+
+Deno.test('teamsList - passes filter to query', async () => {
+  const fixturePath = new URL(
+    '../../tests/fixtures/teams-list.json',
+    import.meta.url,
+  ).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  const filterJson = '{"key":{"eq":"ENG"}}';
+
+  await teamsList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: {},
+    },
+    { filter: filterJson },
+  );
+
+  // Verify the query includes the filter with GraphQL syntax (unquoted keys)
+  assertStringIncludes(client.lastQuery?.query || '', 'filter:');
+  assertStringIncludes(client.lastQuery?.query || '', 'key:');
+  assertStringIncludes(client.lastQuery?.query || '', 'eq:');
+  assertStringIncludes(client.lastQuery?.query || '', '"ENG"');
 });
 
 Deno.test('teamsShow - returns formatted markdown', async () => {

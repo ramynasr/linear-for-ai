@@ -15,10 +15,21 @@ export async function teamsList(
   const fields = options.fields?.split(',') || context.config.defaults.fields.teams;
   const limit = options.limit || context.config.defaults.limit;
 
+  // Parse filter if provided
+  let filter: Record<string, unknown> | undefined;
+  if (options.filter) {
+    try {
+      filter = JSON.parse(options.filter);
+    } catch (error) {
+      throw new Error(`Invalid filter JSON: ${(error as Error).message}`);
+    }
+  }
+
   const query = buildTeamsListQuery({
     fields,
     limit,
     cursor: options.cursor,
+    filter,
   });
 
   const response = await client.query<{ teams: LinearConnection<LinearTeam> }>({
