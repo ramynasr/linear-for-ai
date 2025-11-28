@@ -14,6 +14,41 @@ CLI tool for AI agents to interact with Linear's GraphQL API.
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+brew tap ramynasr/tap
+brew install linear-for-ai
+```
+
+Supports macOS (Intel and Apple Silicon) and Linux (x86_64 and ARM64).
+
+### Pre-built Binaries
+
+Download pre-built binaries from the [releases page](https://github.com/ramynasr/linear-for-ai/releases):
+
+```bash
+# macOS Intel
+curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-macos-x64 -o linear-for-ai
+chmod +x linear-for-ai
+sudo mv linear-for-ai /usr/local/bin/
+
+# macOS Apple Silicon
+curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-macos-arm64 -o linear-for-ai
+chmod +x linear-for-ai
+sudo mv linear-for-ai /usr/local/bin/
+
+# Linux x86_64
+curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-linux-x64 -o linear-for-ai
+chmod +x linear-for-ai
+sudo mv linear-for-ai /usr/local/bin/
+
+# Linux ARM64
+curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-linux-arm64 -o linear-for-ai
+chmod +x linear-for-ai
+sudo mv linear-for-ai /usr/local/bin/
+```
+
 ### From Source (Deno)
 
 ```bash
@@ -22,25 +57,10 @@ git clone https://github.com/ramynasr/linear-for-ai.git
 cd linear-for-ai
 
 # Compile to standalone executable
-./scripts/build.sh
+deno task compile
 
 # Binary available at: ./dist/linear-for-ai
-```
-
-Alternatively, use the Deno task:
-
-```bash
-deno task compile
-```
-
-### Move to PATH (Optional)
-
-```bash
-# Copy executable to a directory in your PATH
 cp ./dist/linear-for-ai /usr/local/bin/
-
-# Or add dist directory to your PATH
-export PATH="$PATH:$(pwd)/dist"
 ```
 
 ## Configuration

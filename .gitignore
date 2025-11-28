@@ -16,6 +16,9 @@ internal-docs/
 # Git worktrees
 .worktrees/
 
+# Homebrew tap (separate repository)
+homebrew-tap/
+
 # Dependencies (if using npm modules)
 node_modules/
 
