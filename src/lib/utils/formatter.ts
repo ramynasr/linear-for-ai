@@ -30,7 +30,7 @@ export function formatPaginationInfo(
   hasNextPage: boolean,
   endCursor?: string,
 ): string {
-  if (!hasNextPage) return '';
+  if (!hasNextPage || !endCursor) return '';
 
   return `\n\nTo see more results, use: --cursor "${endCursor}"`;
 }
