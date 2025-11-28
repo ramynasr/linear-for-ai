@@ -5,7 +5,7 @@ import { loadEnvironment } from './lib/env.ts';
 import { loadConfig } from './lib/config.ts';
 import { GraphQLClient } from './lib/graphql-client.ts';
 import { list as issuesList } from './commands/issues/list/index.ts';
-import { issuesShow } from './commands/issues.ts';
+import { show as issuesShow } from './commands/issues/show/index.ts';
 import { projectsList, projectsShow } from './commands/projects.ts';
 import { teamsList, teamsShow } from './commands/teams.ts';
 import { notificationsList } from './commands/notifications.ts';
