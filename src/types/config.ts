@@ -26,6 +26,7 @@ export interface FieldsConfig {
   'projects list': string[];
   teams: string[];
   cycles: string[];
+  notifications: string[];
 }
 
 export interface CacheConfig {
@@ -56,6 +57,7 @@ export const DEFAULT_CONFIG: Config = {
       'projects list': ['id', 'name', 'url'],
       teams: ['id', 'key', 'name', 'url'],
       cycles: ['id', 'number', 'name', 'startsAt', 'endsAt', 'url'],
+      notifications: ['title', 'subtitle', 'url', 'createdAt'],
     },
   },
   cache: {
