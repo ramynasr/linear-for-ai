@@ -61,6 +61,8 @@ linear-for-ai/
 
 **Executable:** `linear-for-ai` (compiled via `deno compile` to standalone binary)
 
+**Architecture:** See `./docs/architecture/structure.md` for detailed structure decisions, feature-slice patterns, and guidelines for adding new commands.
+
 ## Directory Rules
 
 **Versioned (commit these):**
