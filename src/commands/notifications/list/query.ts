@@ -1,5 +1,5 @@
 import {
-  buildFieldSelection,
+  buildFieldsString,
   buildFilterClause,
   buildPaginationParams,
 } from '../../../lib/utils/query.ts';
@@ -22,7 +22,7 @@ export function buildQuery(options: BuildQueryOptions): string {
     cursor ? `, after: "${params.after}"` : ''
   }${filterClause}) {
         nodes {
-          ${buildFieldSelection(fields)}
+          ${buildFieldsString(fields)}
         }
         pageInfo {
           hasNextPage

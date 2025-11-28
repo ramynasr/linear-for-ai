@@ -2,7 +2,10 @@
  * Shared utilities for building GraphQL queries
  */
 
-import { toGraphQLSyntax } from '../graphql-syntax.ts';
+import { buildFieldsString, toGraphQLSyntax } from '../graphql-syntax.ts';
+
+// Re-export buildFieldsString for unified import location
+export { buildFieldsString };
 
 /**
  * Format fields array as newline-separated string with indentation

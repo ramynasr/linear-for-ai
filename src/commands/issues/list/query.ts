@@ -1,4 +1,5 @@
-import { buildFieldsString, toGraphQLSyntax } from '../../../lib/graphql-syntax.ts';
+import { buildFieldsString } from '../../../lib/utils/query.ts';
+import { toGraphQLSyntax } from '../../../lib/graphql-syntax.ts';
 
 export interface BuildQueryOptions {
   fields: string[];
