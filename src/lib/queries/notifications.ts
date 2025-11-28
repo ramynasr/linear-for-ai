@@ -1,4 +1,4 @@
-import { toGraphQLSyntax } from '../graphql-syntax.ts';
+import { buildFieldsString, toGraphQLSyntax } from '../graphql-syntax.ts';
 
 export interface NotificationsListOptions {
   fields?: string[];
@@ -66,32 +66,4 @@ export function buildNotificationsListQuery(options: NotificationsListOptions): 
       }
     }
   `;
-}
-
-/**
- * Build nested field string with relations
- */
-function buildFieldsString(fields: string[]): string {
-  const simpleFields: string[] = [];
-  const nestedFields: Record<string, string[]> = {};
-
-  for (const field of fields) {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      if (!nestedFields[parent]) {
-        nestedFields[parent] = [];
-      }
-      nestedFields[parent].push(child);
-    } else {
-      simpleFields.push(field);
-    }
-  }
-
-  const result = [...simpleFields];
-
-  for (const [parent, children] of Object.entries(nestedFields)) {
-    result.push(`${parent} { ${children.join(' ')} }`);
-  }
-
-  return result.join('\n          ');
 }

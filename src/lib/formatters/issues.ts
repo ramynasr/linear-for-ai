@@ -1,5 +1,5 @@
-import type { LinearIssue, LinearConnection } from '../../types/linear.ts';
-import { formatTable, formatKeyValue, formatSection } from './markdown.ts';
+import type { LinearConnection, LinearIssue } from '../../types/linear.ts';
+import { formatKeyValue, formatSection, formatTable } from './markdown.ts';
 
 /**
  * Field definitions mapping field names to human-readable titles
@@ -93,11 +93,15 @@ export function formatIssuesList(
   format: 'markdown' | 'json',
 ): string {
   if (format === 'json') {
-    return JSON.stringify({
-      data: {
-        issues: connection,
+    return JSON.stringify(
+      {
+        data: {
+          issues: connection,
+        },
       },
-    }, null, 2);
+      null,
+      2,
+    );
   }
 
   const { nodes, pageInfo } = connection;
@@ -109,9 +113,7 @@ export function formatIssuesList(
   // Determine which fields are present in the data
   const fields = getAvailableFields(nodes);
   const headers = fields.map((field) => getFieldTitle(field));
-  const rows = nodes.map((issue) =>
-    fields.map((field) => formatFieldValue(issue, field))
-  );
+  const rows = nodes.map((issue) => fields.map((field) => formatFieldValue(issue, field)));
 
   const table = formatTable(headers, rows);
   const header = `## Issues (${nodes.length} result${nodes.length === 1 ? '' : 's'})`;
@@ -119,7 +121,8 @@ export function formatIssuesList(
   let output = `${header}\n\n${table}`;
 
   if (pageInfo.hasNextPage) {
-    output += `\n\nShowing ${nodes.length} results. Use --cursor=${pageInfo.endCursor} for next page.`;
+    output +=
+      `\n\nShowing ${nodes.length} results. Use --cursor=${pageInfo.endCursor} for next page.`;
   }
 
   return output;
@@ -130,11 +133,15 @@ export function formatIssuesList(
  */
 export function formatIssueDetail(issue: LinearIssue, format: 'markdown' | 'json'): string {
   if (format === 'json') {
-    return JSON.stringify({
-      data: {
-        issue,
+    return JSON.stringify(
+      {
+        data: {
+          issue,
+        },
       },
-    }, null, 2);
+      null,
+      2,
+    );
   }
 
   const pairs: Array<[string, string]> = [

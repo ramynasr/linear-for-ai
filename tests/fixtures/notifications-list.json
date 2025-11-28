@@ -1,0 +1,36 @@
+{
+  "data": {
+    "notifications": {
+      "nodes": [
+        {
+          "id": "notif-1",
+          "title": "Test issue assigned to you",
+          "subtitle": "Assigned by John Doe",
+          "type": "issueAssignedToYou",
+          "category": "issue",
+          "url": "https://linear.app/team/issue/TEST-123",
+          "inboxUrl": "https://linear.app/team/inbox",
+          "createdAt": "2025-11-20T10:30:00.000Z",
+          "updatedAt": "2025-11-20T10:30:00.000Z"
+        },
+        {
+          "id": "notif-2",
+          "title": "New project update",
+          "subtitle": "New project update by Jane Smith",
+          "type": "projectUpdateCreated",
+          "category": "project",
+          "url": "https://linear.app/team/project/test-project/updates#update-1",
+          "inboxUrl": "https://linear.app/team/inbox",
+          "createdAt": "2025-11-19T14:15:00.000Z",
+          "updatedAt": "2025-11-19T14:15:00.000Z"
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": true,
+        "hasPreviousPage": false,
+        "startCursor": "cursor-start",
+        "endCursor": "cursor-end"
+      }
+    }
+  }
+}

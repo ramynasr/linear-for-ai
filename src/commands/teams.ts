@@ -1,8 +1,8 @@
 import type { GraphQLClient } from '../lib/graphql-client.ts';
 import type { LinearConnection, LinearTeam } from '../types/linear.ts';
 import type { CommandContext, ListOptions, ShowOptions } from '../types/cli.ts';
-import { buildTeamsListQuery, buildTeamShowQuery } from '../lib/queries/teams.ts';
-import { formatTeamsList, formatTeamDetail } from '../lib/formatters/teams.ts';
+import { buildTeamShowQuery, buildTeamsListQuery } from '../lib/queries/teams.ts';
+import { formatTeamDetail, formatTeamsList } from '../lib/formatters/teams.ts';
 
 /**
  * List teams command

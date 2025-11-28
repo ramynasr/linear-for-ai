@@ -1,4 +1,4 @@
-import type { LinearNotification, LinearConnection } from '../../types/linear.ts';
+import type { LinearConnection, LinearNotification } from '../../types/linear.ts';
 
 /**
  * Format a date for display
@@ -15,11 +15,15 @@ export function formatNotificationsList(
   format: 'markdown' | 'json',
 ): string {
   if (format === 'json') {
-    return JSON.stringify({
-      data: {
-        notifications: connection,
+    return JSON.stringify(
+      {
+        data: {
+          notifications: connection,
+        },
       },
-    }, null, 2);
+      null,
+      2,
+    );
   }
 
   const { nodes, pageInfo } = connection;
@@ -48,7 +52,8 @@ export function formatNotificationsList(
   let output = `${header}\n\n${notificationsList}`;
 
   if (pageInfo.hasNextPage) {
-    output += `\n\n${separator}\n\nShowing ${nodes.length} results. Use --cursor=${pageInfo.endCursor} for next page.`;
+    output +=
+      `\n\n${separator}\n\nShowing ${nodes.length} results. Use --cursor=${pageInfo.endCursor} for next page.`;
   }
 
   return output;

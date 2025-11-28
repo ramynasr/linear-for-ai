@@ -1,8 +1,8 @@
 import type { GraphQLClient } from '../lib/graphql-client.ts';
 import type { LinearConnection, LinearIssue } from '../types/linear.ts';
 import type { CommandContext, ListOptions, ShowOptions } from '../types/cli.ts';
-import { buildIssuesListQuery, buildIssueShowQuery } from '../lib/queries/issues.ts';
-import { formatIssuesList, formatIssueDetail } from '../lib/formatters/issues.ts';
+import { buildIssueShowQuery, buildIssuesListQuery } from '../lib/queries/issues.ts';
+import { formatIssueDetail, formatIssuesList } from '../lib/formatters/issues.ts';
 
 /**
  * List issues command

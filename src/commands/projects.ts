@@ -1,11 +1,8 @@
 import type { GraphQLClient } from '../lib/graphql-client.ts';
 import type { LinearConnection, LinearProject } from '../types/linear.ts';
 import type { CommandContext, ListOptions, ShowOptions } from '../types/cli.ts';
-import {
-  buildProjectsListQuery,
-  buildProjectShowQuery,
-} from '../lib/queries/projects.ts';
-import { formatProjectsList, formatProjectDetail } from '../lib/formatters/projects.ts';
+import { buildProjectShowQuery, buildProjectsListQuery } from '../lib/queries/projects.ts';
+import { formatProjectDetail, formatProjectsList } from '../lib/formatters/projects.ts';
 
 /**
  * List projects command
