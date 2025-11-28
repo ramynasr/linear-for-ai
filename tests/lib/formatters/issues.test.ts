@@ -1,6 +1,6 @@
-import { assertEquals, assertStringIncludes } from '@std/assert';
-import { formatIssuesList, formatIssueDetail } from '../../../src/lib/formatters/issues.ts';
-import type { LinearIssue, LinearConnection } from '../../../src/types/linear.ts';
+import { assertStringIncludes } from '@std/assert';
+import { formatIssueDetail, formatIssuesList } from '../../../src/lib/formatters/issues.ts';
+import type { LinearConnection, LinearIssue } from '../../../src/types/linear.ts';
 
 const mockIssue: LinearIssue = {
   id: '1',
@@ -20,26 +20,15 @@ Deno.test('formatIssuesList - formats issues as markdown table', () => {
     pageInfo: { hasNextPage: false, hasPreviousPage: false },
   };
 
-  const result = formatIssuesList(connection, 'markdown');
+  const result = formatIssuesList(connection);
   assertStringIncludes(result, '## Issues');
   assertStringIncludes(result, 'ENG-123');
   assertStringIncludes(result, 'Fix login bug');
   assertStringIncludes(result, 'https://linear.app/team/issue/ENG-123');
 });
 
-Deno.test('formatIssuesList - formats as JSON', () => {
-  const connection: LinearConnection<LinearIssue> = {
-    nodes: [mockIssue],
-    pageInfo: { hasNextPage: false, hasPreviousPage: false },
-  };
-
-  const result = formatIssuesList(connection, 'json');
-  const parsed = JSON.parse(result);
-  assertEquals(parsed.data.issues.nodes[0].identifier, 'ENG-123');
-});
-
 Deno.test('formatIssueDetail - formats single issue', () => {
-  const result = formatIssueDetail(mockIssue, 'markdown');
+  const result = formatIssueDetail(mockIssue);
   assertStringIncludes(result, '## ENG-123');
   assertStringIncludes(result, 'Fix login bug');
   assertStringIncludes(result, 'Status:');

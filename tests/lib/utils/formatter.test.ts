@@ -1,5 +1,9 @@
 import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
-import { formatEmptyResult, formatOutput, formatPaginationInfo } from '../../../src/lib/utils/formatter.ts';
+import {
+  formatEmptyResult,
+  formatOutput,
+  formatPaginationInfo,
+} from '../../../src/lib/utils/formatter.ts';
 
 Deno.test('formatOutput - returns markdown by default', () => {
   const data = { id: '123', name: 'Test' };

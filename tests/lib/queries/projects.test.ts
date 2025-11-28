@@ -1,8 +1,8 @@
 import { assertStringIncludes } from '@std/assert';
 import {
-  buildProjectsListQuery,
-  buildProjectShowQuery,
   buildProjectIssuesQuery,
+  buildProjectShowQuery,
+  buildProjectsListQuery,
 } from '../../../src/lib/queries/projects.ts';
 
 Deno.test('buildProjectsListQuery - generates basic query', () => {

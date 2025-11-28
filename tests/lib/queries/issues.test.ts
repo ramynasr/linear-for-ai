@@ -1,5 +1,5 @@
 import { assertStringIncludes } from '@std/assert';
-import { buildIssuesListQuery, buildIssueShowQuery } from '../../../src/lib/queries/issues.ts';
+import { buildIssueShowQuery, buildIssuesListQuery } from '../../../src/lib/queries/issues.ts';
 
 Deno.test('buildIssuesListQuery - generates basic query', () => {
   const query = buildIssuesListQuery({});

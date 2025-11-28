@@ -1,5 +1,5 @@
 import { assertEquals } from '@std/assert';
-import { loadConfig, getConfigPath } from '../../src/lib/config.ts';
+import { getConfigPath, loadConfig } from '../../src/lib/config.ts';
 import { DEFAULT_CONFIG } from '../../src/types/config.ts';
 import * as path from '@std/path';
 
@@ -24,10 +24,13 @@ Deno.test('loadConfig - returns default config when file not found', async () =>
 
 Deno.test('loadConfig - merges user config with defaults', async () => {
   const testConfigPath = await Deno.makeTempFile({ suffix: '.json' });
-  await Deno.writeTextFile(testConfigPath, JSON.stringify({
-    allowWrites: true,
-    defaults: { limit: 100 },
-  }));
+  await Deno.writeTextFile(
+    testConfigPath,
+    JSON.stringify({
+      allowWrites: true,
+      defaults: { limit: 100 },
+    }),
+  );
 
   const config = await loadConfig(testConfigPath);
   assertEquals(config.allowWrites, true);

@@ -331,6 +331,7 @@ MIT
 ## Credits
 
 Built with:
+
 - [Deno](https://deno.land/) - Modern JavaScript runtime
 - [Linear GraphQL API](https://linear.app/developers) - Linear's API
 

@@ -1,9 +1,6 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import {
-  formatProjectsList,
-  formatProjectDetail,
-} from '../../../src/lib/formatters/projects.ts';
-import type { LinearProject, LinearConnection } from '../../../src/types/linear.ts';
+import { formatProjectDetail, formatProjectsList } from '../../../src/lib/formatters/projects.ts';
+import type { LinearConnection, LinearProject } from '../../../src/types/linear.ts';
 
 const mockProject: LinearProject = {
   id: '1',

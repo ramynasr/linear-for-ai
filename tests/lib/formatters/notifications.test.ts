@@ -1,6 +1,6 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
 import { formatNotificationsList } from '../../../src/lib/formatters/notifications.ts';
-import type { LinearNotification, LinearConnection } from '../../../src/types/linear.ts';
+import type { LinearConnection, LinearNotification } from '../../../src/types/linear.ts';
 
 const mockNotification: LinearNotification = {
   id: 'notif-1',

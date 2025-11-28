@@ -14,6 +14,7 @@ linear-for-ai projects show-my-updates [options]
 ```
 
 **Options:**
+
 - `--since YYYY-MM-DD` - Show updates since specific date (default: 14 days ago)
 - `--show-all-issue-updates` - Show all updated issues, not just completed ones
 - `--limit N` - Max number of projects to show (default: 10)
@@ -22,6 +23,7 @@ linear-for-ai projects show-my-updates [options]
 - `--debug` - Show debug information
 
 **Example usage:**
+
 ```bash
 # Default: last 14 days, completed issues only, 10 projects max
 linear-for-ai projects show-my-updates
@@ -41,6 +43,7 @@ linear-for-ai projects show-my-updates --limit 25
 ### Step 1: Find qualifying projects
 
 Query projects with filter:
+
 ```json
 {
   "and": [
@@ -95,6 +98,7 @@ Showing updates since <date> across <N> projects
 ---
 
 ## Project Name
+
 <project-url>
 
 **Lead:** <name> (<email>)
@@ -127,6 +131,7 @@ Showing updates since <date> across <N> projects
 ---
 
 ## Next Project Name
+
 ...
 ```
 
@@ -197,18 +202,18 @@ src/
    export async function showMyUpdates(
      client: GraphQLClient,
      context: CommandContext,
-     options: ShowMyUpdatesOptions
-   ): Promise<string>
+     options: ShowMyUpdatesOptions,
+   ): Promise<string>;
    ```
 
 2. **Query builder:** `src/commands/projects/show-my-updates/query.ts`
    ```typescript
    export function buildQuery(options: {
-     sinceDate: string,
-     limit: number,
-     cursor?: string,
-     showAllIssues: boolean
-   }): string
+     sinceDate: string;
+     limit: number;
+     cursor?: string;
+     showAllIssues: boolean;
+   }): string;
    ```
 
 3. **Formatter:** `src/commands/projects/show-my-updates/formatter.ts`
@@ -216,8 +221,8 @@ src/
    export function formatOutput(
      projects: LinearProject[],
      sinceDate: string,
-     format: 'markdown' | 'json'
-   ): string
+     format: 'markdown' | 'json',
+   ): string;
    ```
 
 4. **Types:** `src/commands/projects/types.ts`
@@ -329,6 +334,7 @@ src/
 ### Scope of refactoring
 
 Migrate these existing commands:
+
 - `projects list`
 - `projects show`
 - `issues list`

@@ -13,6 +13,7 @@
 ## Task 1: Create New Directory Structure
 
 **Files:**
+
 - Create: `src/lib/utils/.gitkeep`
 - Create: `src/commands/issues/list/.gitkeep`
 - Create: `src/commands/issues/show/.gitkeep`
@@ -57,6 +58,7 @@ git commit -m "refactor: create feature-slice directory structure"
 ## Task 2: Extract Shared Query Utilities
 
 **Files:**
+
 - Create: `src/lib/utils/query.ts`
 - Read: `src/lib/queries/issues.ts` (for reference)
 - Read: `src/lib/queries/projects.ts` (for reference)
@@ -67,27 +69,27 @@ git commit -m "refactor: create feature-slice directory structure"
 Create `tests/lib/utils/query.test.ts`:
 
 ```typescript
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { buildFieldSelection, buildPaginationParams } from "../../../src/lib/utils/query.ts";
+import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
+import { buildFieldSelection, buildPaginationParams } from '../../../src/lib/utils/query.ts';
 
-Deno.test("buildFieldSelection - formats fields as newline-separated string", () => {
-  const fields = ["id", "title", "state { name }"];
+Deno.test('buildFieldSelection - formats fields as newline-separated string', () => {
+  const fields = ['id', 'title', 'state { name }'];
   const result = buildFieldSelection(fields);
-  assertEquals(result, "id\n    title\n    state { name }");
+  assertEquals(result, 'id\n    title\n    state { name }');
 });
 
-Deno.test("buildFieldSelection - handles single field", () => {
-  const fields = ["id"];
+Deno.test('buildFieldSelection - handles single field', () => {
+  const fields = ['id'];
   const result = buildFieldSelection(fields);
-  assertEquals(result, "id");
+  assertEquals(result, 'id');
 });
 
-Deno.test("buildPaginationParams - builds params object", () => {
-  const result = buildPaginationParams(50, "cursor123");
-  assertEquals(result, { first: 50, after: "cursor123" });
+Deno.test('buildPaginationParams - builds params object', () => {
+  const result = buildPaginationParams(50, 'cursor123');
+  assertEquals(result, { first: 50, after: 'cursor123' });
 });
 
-Deno.test("buildPaginationParams - handles missing cursor", () => {
+Deno.test('buildPaginationParams - handles missing cursor', () => {
   const result = buildPaginationParams(25);
   assertEquals(result, { first: 25 });
 });
@@ -156,6 +158,7 @@ git commit -m "refactor: extract shared query utilities"
 ## Task 3: Extract Shared Formatter Utilities
 
 **Files:**
+
 - Create: `src/lib/utils/formatter.ts`
 - Read: `src/lib/formatters/markdown.ts` (existing utilities)
 - Test: `tests/lib/utils/formatter.test.ts`
@@ -165,25 +168,25 @@ git commit -m "refactor: extract shared query utilities"
 Create `tests/lib/utils/formatter.test.ts`:
 
 ```typescript
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { formatOutput, formatEmptyResult } from "../../../src/lib/utils/formatter.ts";
+import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
+import { formatEmptyResult, formatOutput } from '../../../src/lib/utils/formatter.ts';
 
-Deno.test("formatOutput - returns markdown by default", () => {
-  const data = { id: "123", name: "Test" };
-  const markdown = "**Test Data**";
-  const result = formatOutput(data, "markdown", markdown);
+Deno.test('formatOutput - returns markdown by default', () => {
+  const data = { id: '123', name: 'Test' };
+  const markdown = '**Test Data**';
+  const result = formatOutput(data, 'markdown', markdown);
   assertEquals(result, markdown);
 });
 
-Deno.test("formatOutput - returns JSON when format is json", () => {
-  const data = { id: "123", name: "Test" };
-  const result = formatOutput(data, "json", "markdown");
+Deno.test('formatOutput - returns JSON when format is json', () => {
+  const data = { id: '123', name: 'Test' };
+  const result = formatOutput(data, 'json', 'markdown');
   assertEquals(result, JSON.stringify(data, null, 2));
 });
 
-Deno.test("formatEmptyResult - returns appropriate message", () => {
-  const result = formatEmptyResult("projects");
-  assertEquals(result, "No projects found.");
+Deno.test('formatEmptyResult - returns appropriate message', () => {
+  const result = formatEmptyResult('projects');
+  assertEquals(result, 'No projects found.');
 });
 ```
 
@@ -249,6 +252,7 @@ git commit -m "refactor: extract shared formatter utilities"
 ## Task 4: Extract Shared Command Utilities
 
 **Files:**
+
 - Create: `src/lib/utils/command.ts`
 - Test: `tests/lib/utils/command.test.ts`
 
@@ -257,37 +261,37 @@ git commit -m "refactor: extract shared formatter utilities"
 Create `tests/lib/utils/command.test.ts`:
 
 ```typescript
-import { assertEquals, assertThrows } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { parseFilter, getFieldsOrDefault } from "../../../src/lib/utils/command.ts";
+import { assertEquals, assertThrows } from 'https://deno.land/std@0.208.0/assert/mod.ts';
+import { getFieldsOrDefault, parseFilter } from '../../../src/lib/utils/command.ts';
 
-Deno.test("parseFilter - parses valid JSON filter", () => {
+Deno.test('parseFilter - parses valid JSON filter', () => {
   const filter = '{"state":{"type":{"eq":"started"}}}';
   const result = parseFilter(filter);
-  assertEquals(result, { state: { type: { eq: "started" } } });
+  assertEquals(result, { state: { type: { eq: 'started' } } });
 });
 
-Deno.test("parseFilter - throws on invalid JSON", () => {
+Deno.test('parseFilter - throws on invalid JSON', () => {
   const filter = '{invalid json}';
   assertThrows(
     () => parseFilter(filter),
     Error,
-    "Invalid filter JSON",
+    'Invalid filter JSON',
   );
 });
 
-Deno.test("parseFilter - returns undefined when no filter", () => {
+Deno.test('parseFilter - returns undefined when no filter', () => {
   const result = parseFilter(undefined);
   assertEquals(result, undefined);
 });
 
-Deno.test("getFieldsOrDefault - returns parsed fields from string", () => {
-  const result = getFieldsOrDefault("id,title,state", ["id"]);
-  assertEquals(result, ["id", "title", "state"]);
+Deno.test('getFieldsOrDefault - returns parsed fields from string', () => {
+  const result = getFieldsOrDefault('id,title,state', ['id']);
+  assertEquals(result, ['id', 'title', 'state']);
 });
 
-Deno.test("getFieldsOrDefault - returns default when no fields provided", () => {
-  const result = getFieldsOrDefault(undefined, ["id", "url"]);
-  assertEquals(result, ["id", "url"]);
+Deno.test('getFieldsOrDefault - returns default when no fields provided', () => {
+  const result = getFieldsOrDefault(undefined, ['id', 'url']);
+  assertEquals(result, ['id', 'url']);
 });
 ```
 
@@ -347,6 +351,7 @@ git commit -m "refactor: extract shared command utilities"
 ## Task 5: Migrate issues list Command
 
 **Files:**
+
 - Create: `src/commands/issues/list/index.ts`
 - Create: `src/commands/issues/list/query.ts`
 - Create: `src/commands/issues/list/formatter.ts`
@@ -359,7 +364,11 @@ git commit -m "refactor: extract shared command utilities"
 Create `src/commands/issues/list/query.ts`:
 
 ```typescript
-import { buildFieldSelection, buildPaginationParams, buildFilterClause } from '../../../lib/utils/query.ts';
+import {
+  buildFieldSelection,
+  buildFilterClause,
+  buildPaginationParams,
+} from '../../../lib/utils/query.ts';
 
 export interface BuildQueryOptions {
   fields: string[];
@@ -417,7 +426,7 @@ import type { LinearConnection, LinearIssue } from '../../../types/linear.ts';
 import type { CommandContext, ListOptions } from '../../../types/cli.ts';
 import { buildQuery } from './query.ts';
 import { formatIssuesList } from './formatter.ts';
-import { parseFilter, getFieldsOrDefault } from '../../../lib/utils/command.ts';
+import { getFieldsOrDefault, parseFilter } from '../../../lib/utils/command.ts';
 
 export async function list(
   client: GraphQLClient,
@@ -476,6 +485,7 @@ git commit -m "refactor: migrate issues list to feature-slice structure"
 ## Task 6: Migrate issues show Command
 
 **Files:**
+
 - Create: `src/commands/issues/show/index.ts`
 - Create: `src/commands/issues/show/query.ts`
 - Create: `src/commands/issues/show/formatter.ts`
@@ -584,6 +594,7 @@ git commit -m "refactor: migrate issues show to feature-slice structure"
 ## Task 7: Migrate projects list Command
 
 **Files:**
+
 - Create: `src/commands/projects/list/index.ts`
 - Create: `src/commands/projects/list/query.ts`
 - Create: `src/commands/projects/list/formatter.ts`
@@ -594,7 +605,11 @@ git commit -m "refactor: migrate issues show to feature-slice structure"
 Create `src/commands/projects/list/query.ts`:
 
 ```typescript
-import { buildFieldSelection, buildPaginationParams, buildFilterClause } from '../../../lib/utils/query.ts';
+import {
+  buildFieldSelection,
+  buildFilterClause,
+  buildPaginationParams,
+} from '../../../lib/utils/query.ts';
 
 export interface BuildQueryOptions {
   fields: string[];
@@ -652,7 +667,7 @@ import type { LinearConnection, LinearProject } from '../../../types/linear.ts';
 import type { CommandContext, ListOptions } from '../../../types/cli.ts';
 import { buildQuery } from './query.ts';
 import { formatProjectsList } from './formatter.ts';
-import { parseFilter, getFieldsOrDefault } from '../../../lib/utils/command.ts';
+import { getFieldsOrDefault, parseFilter } from '../../../lib/utils/command.ts';
 
 export async function list(
   client: GraphQLClient,
@@ -708,6 +723,7 @@ git commit -m "refactor: migrate projects list to feature-slice structure"
 ## Task 8: Migrate projects show Command
 
 **Files:**
+
 - Create: `src/commands/projects/show/index.ts`
 - Create: `src/commands/projects/show/query.ts`
 - Create: `src/commands/projects/show/formatter.ts`
@@ -812,6 +828,7 @@ git commit -m "refactor: migrate projects show to feature-slice structure"
 ## Task 9: Migrate teams Commands
 
 **Files:**
+
 - Create: `src/commands/teams/list/index.ts`
 - Create: `src/commands/teams/list/query.ts`
 - Create: `src/commands/teams/list/formatter.ts`
@@ -825,7 +842,11 @@ git commit -m "refactor: migrate projects show to feature-slice structure"
 Create `src/commands/teams/list/query.ts`:
 
 ```typescript
-import { buildFieldSelection, buildPaginationParams, buildFilterClause } from '../../../lib/utils/query.ts';
+import {
+  buildFieldSelection,
+  buildFilterClause,
+  buildPaginationParams,
+} from '../../../lib/utils/query.ts';
 
 export interface BuildQueryOptions {
   fields: string[];
@@ -883,7 +904,7 @@ import type { LinearConnection, LinearTeam } from '../../../types/linear.ts';
 import type { CommandContext, ListOptions } from '../../../types/cli.ts';
 import { buildQuery } from './query.ts';
 import { formatTeamsList } from './formatter.ts';
-import { parseFilter, getFieldsOrDefault } from '../../../lib/utils/command.ts';
+import { getFieldsOrDefault, parseFilter } from '../../../lib/utils/command.ts';
 
 export async function list(
   client: GraphQLClient,
@@ -942,6 +963,7 @@ git commit -m "refactor: migrate teams commands to feature-slice structure"
 ## Task 10: Migrate notifications list Command
 
 **Files:**
+
 - Create: `src/commands/notifications/list/index.ts`
 - Create: `src/commands/notifications/list/query.ts`
 - Create: `src/commands/notifications/list/formatter.ts`
@@ -952,7 +974,11 @@ git commit -m "refactor: migrate teams commands to feature-slice structure"
 Create `src/commands/notifications/list/query.ts`:
 
 ```typescript
-import { buildFieldSelection, buildPaginationParams, buildFilterClause } from '../../../lib/utils/query.ts';
+import {
+  buildFieldSelection,
+  buildFilterClause,
+  buildPaginationParams,
+} from '../../../lib/utils/query.ts';
 
 export interface BuildQueryOptions {
   fields: string[];
@@ -968,7 +994,9 @@ export function buildQuery(options: BuildQueryOptions): string {
 
   return `
     query {
-      notifications(first: ${params.first}${cursor ? `, after: "${params.after}"` : ''}${filterClause}) {
+      notifications(first: ${params.first}${
+    cursor ? `, after: "${params.after}"` : ''
+  }${filterClause}) {
         nodes {
           ${buildFieldSelection(fields)}
         }
@@ -1009,6 +1037,7 @@ git commit -m "refactor: migrate notifications list to feature-slice structure"
 ## Task 11: Create Resource-Level Types Files
 
 **Files:**
+
 - Create: `src/commands/projects/types.ts`
 - Create: `src/commands/issues/types.ts`
 
@@ -1055,6 +1084,7 @@ git commit -m "refactor: add resource-level type files"
 ## Task 12: Delete Old Command Files
 
 **Files:**
+
 - Delete: `src/commands/issues.ts`
 - Delete: `src/commands/projects.ts`
 - Delete: `src/commands/teams.ts`
@@ -1105,6 +1135,7 @@ git commit -m "refactor: remove old flat structure files"
 ## Task 13: Write Structure Documentation
 
 **Files:**
+
 - Create: `docs/architecture/structure.md`
 - Modify: `CLAUDE.md` (add reference)
 
@@ -1123,22 +1154,22 @@ This project uses a **feature-slice** architecture where each command is self-co
 
 \`\`\`
 src/
-  commands/
-    {resource}/
-      {action}/
-        index.ts      # Command handler (exports main function)
-        query.ts      # GraphQL query builder
-        formatter.ts  # Output formatter (markdown/JSON)
-      types.ts        # Resource-specific types
-  lib/
-    utils/
-      query.ts        # Shared query utilities
-      formatter.ts    # Shared formatter utilities
-      command.ts      # Shared command utilities
-    graphql-client.ts
-  types/
-    linear.ts         # Linear API types
-    cli.ts            # Shared CLI types
+commands/
+{resource}/
+{action}/
+index.ts # Command handler (exports main function)
+query.ts # GraphQL query builder
+formatter.ts # Output formatter (markdown/JSON)
+types.ts # Resource-specific types
+lib/
+utils/
+query.ts # Shared query utilities
+formatter.ts # Shared formatter utilities
+command.ts # Shared command utilities
+graphql-client.ts
+types/
+linear.ts # Linear API types
+cli.ts # Shared CLI types
 \`\`\`
 
 ## File Placement Rules
@@ -1162,6 +1193,7 @@ src/
 Each command follows this structure:
 
 ### index.ts (Handler)
+
 - Exports main function (e.g., `list`, `show`)
 - Parses options
 - Calls query builder
@@ -1170,12 +1202,14 @@ Each command follows this structure:
 - Returns formatted output
 
 ### query.ts (Query Builder)
+
 - Exports `buildQuery()` function
 - Takes structured options
 - Returns GraphQL query string
 - Uses shared utilities from `lib/utils/query.ts`
 
 ### formatter.ts (Formatter)
+
 - Exports format function (e.g., `formatIssuesList`)
 - Takes data and format type
 - Returns markdown or JSON
@@ -1193,16 +1227,19 @@ Each command follows this structure:
 ## Shared Utilities
 
 ### lib/utils/query.ts
+
 - `buildFieldSelection()` - Format fields array
 - `buildPaginationParams()` - Build pagination object
 - `buildFilterClause()` - Convert filter to GraphQL syntax
 
 ### lib/utils/formatter.ts
+
 - `formatOutput()` - Route to markdown or JSON
 - `formatEmptyResult()` - Format "no results" message
 - `formatPaginationInfo()` - Format cursor info
 
 ### lib/utils/command.ts
+
 - `parseFilter()` - Parse JSON filter string
 - `getFieldsOrDefault()` - Get fields from string or defaults
 
@@ -1253,14 +1290,17 @@ Expected: No errors
 **Step 4: Manual smoke test**
 
 If you have LINEAR_API_KEY set:
+
 ```bash
 deno run --allow-all src/cli.ts issues list --help
 ```
+
 Expected: Help text displays correctly
 
 **Step 5: Create summary commit if needed**
 
 If any fixes were made during verification:
+
 ```bash
 git add -A
 git commit -m "refactor: final cleanup and verification"
@@ -1281,6 +1321,7 @@ git commit -m "refactor: final cleanup and verification"
 ## Next Steps
 
 After this refactoring is complete and merged to trunk:
+
 1. Create new worktree for `projects show-my-updates` feature
 2. Implement following the established feature-slice pattern
 3. Reference `docs/architecture/structure.md` for guidance

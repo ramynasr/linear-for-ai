@@ -55,7 +55,7 @@ Deno.test('issuesList - returns JSON format', async () => {
   );
 
   const parsed = JSON.parse(result);
-  assertEquals(parsed.data.issues.nodes[0].identifier, 'ENG-123');
+  assertEquals(parsed.nodes[0].identifier, 'ENG-123');
 });
 
 Deno.test('issuesList - passes filter to query', async () => {
