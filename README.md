@@ -1,16 +1,16 @@
 # linear-for-ai
 
-CLI tool for AI agents to interact with Linear's GraphQL API.
+CLI for AI agents to interact with Linear's GraphQL API.
 
 ## Overview
 
-`linear-for-ai` is a command-line interface designed specifically for AI agents to query and interact with Linear's API efficiently. It provides:
+Command-line interface for AI agents to query Linear efficiently:
 
-- Terminal-optimized markdown output (token-efficient for AI consumption)
-- JSON output for programmatic processing
-- Direct GraphQL access to overcome MCP limitations
-- Web URLs included in all responses for easy navigation
-- Standalone executable with no runtime dependencies
+- Terminal-optimized markdown (token-efficient)
+- JSON output for programmatic use
+- Direct GraphQL access (overcomes MCP limitations)
+- Web URLs in all responses
+- Standalone executable, no runtime dependencies
 
 ## Installation
 
@@ -25,26 +25,10 @@ Supports macOS (Intel and Apple Silicon) and Linux (x86_64 and ARM64).
 
 ### Pre-built Binaries
 
-Download pre-built binaries from the [releases page](https://github.com/ramynasr/linear-for-ai/releases):
+Download from the [releases page](https://github.com/ramynasr/linear-for-ai/releases). Replace `{PLATFORM}` with `macos-x64`, `macos-arm64`, `linux-x64`, or `linux-arm64`:
 
 ```bash
-# macOS Intel
-curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-macos-x64 -o linear-for-ai
-chmod +x linear-for-ai
-sudo mv linear-for-ai /usr/local/bin/
-
-# macOS Apple Silicon
-curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-macos-arm64 -o linear-for-ai
-chmod +x linear-for-ai
-sudo mv linear-for-ai /usr/local/bin/
-
-# Linux x86_64
-curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-linux-x64 -o linear-for-ai
-chmod +x linear-for-ai
-sudo mv linear-for-ai /usr/local/bin/
-
-# Linux ARM64
-curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-linux-arm64 -o linear-for-ai
+curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-{PLATFORM} -o linear-for-ai
 chmod +x linear-for-ai
 sudo mv linear-for-ai /usr/local/bin/
 ```
@@ -52,14 +36,9 @@ sudo mv linear-for-ai /usr/local/bin/
 ### From Source (Deno)
 
 ```bash
-# Clone repository
 git clone https://github.com/ramynasr/linear-for-ai.git
 cd linear-for-ai
-
-# Compile to standalone executable
 deno task compile
-
-# Binary available at: ./dist/linear-for-ai
 cp ./dist/linear-for-ai /usr/local/bin/
 ```
 
@@ -67,22 +46,17 @@ cp ./dist/linear-for-ai /usr/local/bin/
 
 ### Environment Variables
 
-Create a `.env` file in your project root:
+Required: `LINEAR_API_KEY` (get from Linear Settings → API → Personal API Keys)
+
+Optional: `LINEAR_CONFIG`, `HTTPS_PROXY`
 
 ```bash
-# Required
 LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Optional
-LINEAR_CONFIG=/custom/path/to/config.json
-HTTPS_PROXY=http://proxy.example.com:8080
 ```
-
-Get your API key from: Linear Settings → API → Personal API Keys
 
 ### Config File
 
-Create `~/.config/linear-for-ai/config.json` to customize defaults:
+Customize defaults in `~/.config/linear-for-ai/config.json`:
 
 ```json
 {
@@ -97,15 +71,11 @@ Create `~/.config/linear-for-ai/config.json` to customize defaults:
 }
 ```
 
-See `config.example.json` for full configuration options.
-
-Full documentation: [docs/configuration.md](docs/configuration.md)
+See `config.example.json` for all options. Full docs: [docs/configuration.md](docs/configuration.md)
 
 ## Usage
 
-### Basic Commands
-
-#### Issues
+### Commands
 
 ```bash
 # List all issues
@@ -141,7 +111,7 @@ linear-for-ai issues list --fields id,title,url
 
 #### Markdown (Default)
 
-Token-efficient table format optimized for AI consumption:
+Token-efficient tables for AI consumption:
 
 ```
 ## Issues (3 results)
@@ -155,7 +125,7 @@ ENG-125  Update docs        Done          Low       https://linear.app/team/ENG-
 
 #### JSON
 
-Structured output for programmatic processing:
+Structured output for programs:
 
 ```json
 {
@@ -264,85 +234,44 @@ deno task compile
 
 ## Architecture
 
-### Key Design Decisions
+### Design Decisions
 
-1. **Deno over Node.js**: Native TypeScript support, built-in testing, single executable compilation
-2. **Direct GraphQL**: Bypasses SDK limitations for complex queries
-3. **Token-efficient output**: Markdown tables minimize token usage for AI agents
-4. **Web URLs**: Always included for human verification
-5. **Zero runtime dependencies**: Compiled executable includes everything needed
+1. **Deno**: Native TypeScript, built-in testing, single executable
+2. **Direct GraphQL**: Bypasses SDK limitations
+3. **Token-efficient output**: Minimizes AI token usage
+4. **Web URLs**: Enables human verification
+5. **Zero runtime dependencies**: Self-contained executable
 
 ### Security
 
-- API keys never logged (redacted to last 4 characters in debug mode)
-- Write operations require explicit configuration and flags
-- All network requests use HTTPS
-- Proxy support for corporate environments
+- API keys redacted in logs (last 4 chars only)
+- Writes require explicit config and flags
+- HTTPS only
+- Proxy support
 
 ## Troubleshooting
 
-### API Key Issues
+**API key not working?** Verify with `echo $LINEAR_API_KEY` or run with `--debug`
 
-```bash
-# Verify API key is set
-echo $LINEAR_API_KEY
+**Permission errors?** Run `chmod +x ./dist/linear-for-ai`
 
-# Test with debug mode
-linear-for-ai issues list --debug
-```
-
-### Permission Errors
-
-Ensure the executable has proper permissions:
-
-```bash
-chmod +x ./dist/linear-for-ai
-```
-
-### Network Issues
-
-If behind a proxy:
-
-```bash
-export HTTPS_PROXY=http://proxy.example.com:8080
-linear-for-ai issues list
-```
+**Behind proxy?** Set `export HTTPS_PROXY=http://proxy.example.com:8080`
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make changes and add tests
-4. Run tests: `deno task test`
-5. Format code: `deno task fmt`
-6. Commit changes: `git commit -m "feat: description"`
-7. Push and create a Pull Request
+1. Fork and create feature branch
+2. Add tests for changes
+3. Run `deno task test` and `deno task fmt`
+4. Commit: `git commit -m "feat: description"`
+5. Create Pull Request
 
-### Code Style
-
-- TypeScript strict mode
-- 100 character line width
-- Single quotes
-- 2 space indentation
-- Descriptive variable names
+Code style: TypeScript strict mode, 100 char lines, single quotes, 2 spaces, descriptive names
 
 ## Roadmap
 
-### Current (v0.1.0)
+**Current (v0.1.0):** Issues list/show, markdown/JSON output, config support, standalone executable
 
-- Issues list and show commands
-- Markdown and JSON output
-- Environment and config file support
-- Standalone executable compilation
-
-### Planned
-
-- Projects commands
-- Teams commands
-- Cycles commands
-- Write operations (create, update, delete)
-- Advanced filtering and search
-- Caching for improved performance
+**Planned:** Projects, teams, cycles, write operations, filtering, caching
 
 ## License
 
@@ -350,8 +279,6 @@ MIT
 
 ## Credits
 
-Built with:
-- [Deno](https://deno.land/) - Modern JavaScript runtime
-- [Linear GraphQL API](https://linear.app/developers) - Linear's API
+Built with [Deno](https://deno.land/) and [Linear's GraphQL API](https://linear.app/developers)
 
-Created for AI agents by [Ramy Nasr](https://github.com/ramynasr)
+Created by [Ramy Nasr](https://github.com/ramynasr)
