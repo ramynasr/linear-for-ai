@@ -11,6 +11,7 @@ CLI tool (npm package: `linear-for-ai`) for AI agents to interact with Linear's 
 ## Core Principles
 
 **API Integration:**
+
 - Direct GraphQL client for all API interactions (custom `GraphQLClient` class)
 - Dynamic field selection to minimize token usage (core project goal)
 - No external SDK dependency - maintains smallest executable size
@@ -19,6 +20,7 @@ CLI tool (npm package: `linear-for-ai`) for AI agents to interact with Linear's 
 - See `./internal-docs/sdk-evaluation.md` for reasoning behind not using @linear/sdk
 
 **Output Design:**
+
 - Default: Terminal-optimized markdown (aligned columns, no colors in regular output)
 - Alternative: JSON via `--format=json`
 - MUST include web URLs for all objects
@@ -26,12 +28,14 @@ CLI tool (npm package: `linear-for-ai`) for AI agents to interact with Linear's 
 - Colors allowed only for help text and debug output
 
 **Safety:**
+
 - Read operations execute without confirmation
 - Write operations require preview-then-confirm workflow
 - Global `allowWrites` config defaults to `false`
 - All `--debug` output MUST redact API keys (show last 4 chars only)
 
 **Testing:**
+
 - Unit tests use mocks
 - Integration tests use recordings or sandbox API
 - Never commit real API keys or workspace data
@@ -39,6 +43,7 @@ CLI tool (npm package: `linear-for-ai`) for AI agents to interact with Linear's 
 ## Package Structure
 
 **Deno project:**
+
 ```
 linear-for-ai/
 ├── src/                # Source code
@@ -56,9 +61,12 @@ linear-for-ai/
 
 **Executable:** `linear-for-ai` (compiled via `deno compile` to standalone binary)
 
+**Architecture:** See `./docs/architecture/structure.md` for detailed structure decisions, feature-slice patterns, and guidelines for adding new commands.
+
 ## Directory Rules
 
 **Versioned (commit these):**
+
 - `./src/` - All source code
 - `./tests/` - All test files
 - `./docs/` - User documentation
@@ -69,6 +77,7 @@ linear-for-ai/
 - `./README.md`, `./LICENSE`
 
 **Ignored (never commit):**
+
 - `./internal-docs/` - Design docs, plans, transient artifacts
 - `./dist/` - Compiled binaries
 - `./coverage/` - Test coverage reports
@@ -78,11 +87,13 @@ linear-for-ai/
 ## Command Structure
 
 Resource-based CLI:
+
 ```bash
 linear-for-ai <resource> <action> [options]
 ```
 
 Common patterns:
+
 ```bash
 linear-for-ai issues list --filter 'status:in_progress'
 linear-for-ai projects show <id>
@@ -95,15 +106,18 @@ Note: Raw GraphQL query commands NOT exposed yet (future iteration).
 
 **Environment Variables (.env or shell):**
 Required:
+
 - `LINEAR_API_KEY` - Personal API key
 
 Optional:
+
 - `LINEAR_CONFIG` - Override config file path
 - `HTTPS_PROXY` / `HTTP_PROXY` - Proxy for API requests
 
 **Config File:** `~/.config/linear-for-ai/config.json`
 
 Key fields:
+
 - `allowWrites` - Boolean, defaults false
 - `proxy.enabled` / `proxy.url` - Proxy configuration
 - `defaults.format` - Output format (markdown or json)
@@ -115,11 +129,13 @@ Key fields:
 ## Write Operations
 
 Default behavior (no flags):
+
 1. Compute planned changes
 2. Output preview
 3. Exit with "Run with --yes to execute"
 
 With `--yes` flag:
+
 1. Check `allowWrites` config (must be true)
 2. Execute operation
 3. Output confirmation with URL
@@ -127,12 +143,14 @@ With `--yes` flag:
 ## Security
 
 **API Key Handling:**
+
 - Read from environment variable or .env file
 - Never log in full
 - Debug mode shows: `LINEAR_...xyz` (last 4 chars)
 - Redact from headers, request bodies, error messages
 
 **Proxy Support:**
+
 - Respect HTTPS_PROXY / HTTP_PROXY env vars
 - Config file proxy settings override env vars
 - All API requests must go through configured proxy
@@ -140,6 +158,7 @@ With `--yes` flag:
 ## Output Formatting
 
 **Terminal Markdown:**
+
 - Tables with fixed-width columns and padding for alignment
 - Calculate column widths dynamically or use sensible defaults
 - Truncate long values with "..." suffix
@@ -148,6 +167,7 @@ With `--yes` flag:
 - Colors OK for help and debug messages only
 
 **Web URLs:**
+
 - ALWAYS include web URL for objects in both markdown and JSON output
 - Format: `https://linear.app/team/issue/ENG-123`
 - Include in default field selections
@@ -155,11 +175,13 @@ With `--yes` flag:
 ## Development Workflow
 
 **Before implementing:**
+
 - Check design document in `./internal-docs/design.md`
 - Use TodoWrite for task tracking
 - Validate design decisions before coding
 
 **Code style:**
+
 - TypeScript strict mode (enforced by Deno)
 - Deno-style imports (ESM only)
 - Descriptive variable names
@@ -168,6 +190,7 @@ With `--yes` flag:
 - Follow Deno linting: `deno lint`
 
 **Testing:**
+
 - Write unit tests for pure functions
 - Use fixtures for integration tests
 - Mock external API calls in unit tests
@@ -175,6 +198,7 @@ With `--yes` flag:
 ## Common Pitfalls
 
 **Don't:**
+
 - Commit files in `./internal-docs/`
 - Commit `.env` file
 - Log API keys without redaction
@@ -184,6 +208,7 @@ With `--yes` flag:
 - Store API keys in config.json
 
 **Do:**
+
 - Use Deno's standard library for .env file support (@std/dotenv)
 - Include web URLs in all object outputs
 - Format tables for terminal display

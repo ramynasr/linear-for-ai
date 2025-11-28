@@ -44,6 +44,7 @@ For object fields (like `state`, `assignee`, `project`), you must specify which 
 ## Common Comparators
 
 ### StringComparator
+
 - `eq` - Equals exactly
 - `neq` - Not equals
 - `in` - In array of values
@@ -54,6 +55,7 @@ For object fields (like `state`, `assignee`, `project`), you must specify which 
 - `eqIgnoreCase` - Equals (case-insensitive)
 
 ### NumberComparator
+
 - `eq` - Equals
 - `neq` - Not equals
 - `gt` - Greater than
@@ -63,6 +65,7 @@ For object fields (like `state`, `assignee`, `project`), you must specify which 
 - `in` - In array of values
 
 ### DateComparator
+
 - `eq` - Equals date
 - `neq` - Not equals date
 - `gt` - After date
@@ -71,6 +74,7 @@ For object fields (like `state`, `assignee`, `project`), you must specify which 
 - `lte` - On or before date
 
 ### BooleanComparator
+
 - `eq` - Equals (true or false)
 - `neq` - Not equals
 
@@ -94,6 +98,7 @@ For object fields (like `state`, `assignee`, `project`), you must specify which 
 ### ❌ Incorrect: Using JSON syntax in GraphQL
 
 The CLI handles this automatically, but be aware that GraphQL uses unquoted keys:
+
 - JSON: `{"key": "value"}`
 - GraphQL: `{key: "value"}`
 
@@ -104,6 +109,7 @@ You provide JSON; the CLI converts it to GraphQL.
 ### Issues
 
 **Filter by state type:**
+
 ```bash
 linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
 ```
@@ -111,16 +117,19 @@ linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
 State types: `triage`, `backlog`, `unstarted`, `started`, `completed`, `canceled`
 
 **Filter by state name:**
+
 ```bash
 linear-for-ai issues list --filter '{"state":{"name":{"eq":"In Progress"}}}'
 ```
 
 **Filter by assignee:**
+
 ```bash
 linear-for-ai issues list --filter '{"assignee":{"name":{"eq":"John Doe"}}}'
 ```
 
 **Filter by priority:**
+
 ```bash
 linear-for-ai issues list --filter '{"priority":{"eq":1}}'
 ```
@@ -128,21 +137,25 @@ linear-for-ai issues list --filter '{"priority":{"eq":1}}'
 Priority values: `0` = None, `1` = Urgent, `2` = High, `3` = Normal, `4` = Low
 
 **Filter by team:**
+
 ```bash
 linear-for-ai issues list --filter '{"team":{"key":{"eq":"ENG"}}}'
 ```
 
 **Multiple conditions (AND):**
+
 ```bash
 linear-for-ai issues list --filter '{"and":[{"state":{"type":{"eq":"started"}}},{"priority":{"lte":2}}]}'
 ```
 
 **Multiple conditions (OR):**
+
 ```bash
 linear-for-ai issues list --filter '{"or":[{"state":{"type":{"eq":"started"}}},{"state":{"type":{"eq":"completed"}}}]}'
 ```
 
 **Using IN operator:**
+
 ```bash
 linear-for-ai issues list --filter '{"state":{"type":{"in":["started","completed"]}}}'
 ```
@@ -150,11 +163,13 @@ linear-for-ai issues list --filter '{"state":{"type":{"in":["started","completed
 ### Projects
 
 **Filter projects where I'm a member:**
+
 ```bash
 linear-for-ai projects list --filter '{"members":{"some":{"isMe":{"eq":true}}}}'
 ```
 
 **Filter by project state:**
+
 ```bash
 linear-for-ai projects list --filter '{"state":{"eq":"started"}}'
 ```
@@ -162,11 +177,13 @@ linear-for-ai projects list --filter '{"state":{"eq":"started"}}'
 Project states: `planned`, `started`, `paused`, `completed`, `canceled`
 
 **Filter by lead:**
+
 ```bash
 linear-for-ai projects list --filter '{"lead":{"name":{"eq":"Jane Smith"}}}'
 ```
 
 **Filter by name containing text:**
+
 ```bash
 linear-for-ai projects list --filter '{"name":{"contains":"Q1"}}'
 ```
@@ -174,11 +191,13 @@ linear-for-ai projects list --filter '{"name":{"contains":"Q1"}}'
 ### Teams
 
 **Filter by team key:**
+
 ```bash
 linear-for-ai teams list --filter '{"key":{"eq":"ENG"}}'
 ```
 
 **Filter by name:**
+
 ```bash
 linear-for-ai teams list --filter '{"name":{"contains":"Engineering"}}'
 ```
@@ -192,11 +211,13 @@ When filtering by relationships (e.g., "projects where I'm a member"), use colle
 - `length` - Collection has specific length
 
 **Example: Projects with at least one member named "John"**
+
 ```bash
 linear-for-ai projects list --filter '{"members":{"some":{"name":{"eq":"John"}}}}'
 ```
 
 **Example: Projects with exactly 3 members**
+
 ```bash
 linear-for-ai projects list --filter '{"members":{"length":{"eq":3}}}'
 ```
@@ -206,11 +227,13 @@ linear-for-ai projects list --filter '{"members":{"length":{"eq":3}}}'
 Use `isMe` to filter by the authenticated user:
 
 **Issues assigned to me:**
+
 ```bash
 linear-for-ai issues list --filter '{"assignee":{"isMe":{"eq":true}}}'
 ```
 
 **Projects where I'm a member:**
+
 ```bash
 linear-for-ai projects list --filter '{"members":{"some":{"isMe":{"eq":true}}}}'
 ```
@@ -228,6 +251,7 @@ If you get errors:
 ## Reference
 
 For the complete list of available filters and fields, refer to:
+
 - Linear API Documentation: https://developers.linear.app/docs/graphql/working-with-the-graphql-api
 - GraphQL Schema: `./docs/linear-docs/schema.graphql`
 

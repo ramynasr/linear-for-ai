@@ -279,6 +279,9 @@ MIT
 
 ## Credits
 
-Built with [Deno](https://deno.land/) and [Linear's GraphQL API](https://linear.app/developers)
+Built with:
+
+- [Deno](https://deno.land/) - Modern JavaScript runtime
+- [Linear GraphQL API](https://linear.app/developers) - Linear's API
 
 Created by [Ramy Nasr](https://github.com/ramynasr)

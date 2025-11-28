@@ -86,24 +86,11 @@ function getAvailableFields(nodes: LinearIssue[]): string[] {
 }
 
 /**
- * Format issues list for output
+ * Format issues list for output (markdown only)
  */
 export function formatIssuesList(
   connection: LinearConnection<LinearIssue>,
-  format: 'markdown' | 'json',
 ): string {
-  if (format === 'json') {
-    return JSON.stringify(
-      {
-        data: {
-          issues: connection,
-        },
-      },
-      null,
-      2,
-    );
-  }
-
   const { nodes, pageInfo } = connection;
 
   if (nodes.length === 0) {
@@ -129,21 +116,9 @@ export function formatIssuesList(
 }
 
 /**
- * Format single issue detail for output
+ * Format single issue detail for output (markdown only)
  */
-export function formatIssueDetail(issue: LinearIssue, format: 'markdown' | 'json'): string {
-  if (format === 'json') {
-    return JSON.stringify(
-      {
-        data: {
-          issue,
-        },
-      },
-      null,
-      2,
-    );
-  }
-
+export function formatIssueDetail(issue: LinearIssue): string {
   const pairs: Array<[string, string]> = [
     ['Status', issue.state.name],
     ['Priority', issue.priorityLabel],

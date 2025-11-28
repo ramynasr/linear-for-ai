@@ -1,5 +1,6 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { teamsList, teamsShow } from '../../src/commands/teams.ts';
+import { list as teamsList } from '../../src/commands/teams/list/index.ts';
+import { show as teamsShow } from '../../src/commands/teams/show/index.ts';
 import { GraphQLClient } from '../../src/lib/graphql-client.ts';
 import { DEFAULT_CONFIG } from '../../src/types/config.ts';
 
@@ -61,8 +62,8 @@ Deno.test('teamsList - returns JSON format', async () => {
   );
 
   const parsed = JSON.parse(result);
-  assertEquals(parsed.data.teams.nodes[0].key, 'ENG');
-  assertEquals(parsed.data.teams.nodes[0].name, 'Engineering');
+  assertEquals(parsed.nodes[0].key, 'ENG');
+  assertEquals(parsed.nodes[0].name, 'Engineering');
 });
 
 Deno.test('teamsList - passes filter to query', async () => {

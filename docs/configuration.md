@@ -23,15 +23,19 @@ See `config.example.json` for full example.
 ### Key Settings
 
 **allowWrites** (boolean, default: false)
+
 - Must be `true` to execute write operations with `--allow-writes` flag
 
 **defaults.format** (string, default: "markdown")
+
 - Default output format: "markdown" or "json"
 
 **defaults.limit** (number, default: 50)
+
 - Default pagination limit for list commands
 
 **defaults.fields** (object)
+
 - Default field selections for each resource type
 - Use dot notation for nested fields: "assignee.displayName"
 
@@ -49,11 +53,13 @@ linear-for-ai issues show ENG-123 --fields id,title,description,state.name
 Two ways to configure proxy:
 
 1. Environment variables (applies to all requests):
+
 ```bash
 export HTTPS_PROXY=http://proxy.example.com:8080
 ```
 
 2. Config file (takes precedence):
+
 ```json
 {
   "proxy": {

@@ -4,10 +4,13 @@ import { parseArgs } from './lib/cli-parser.ts';
 import { loadEnvironment } from './lib/env.ts';
 import { loadConfig } from './lib/config.ts';
 import { GraphQLClient } from './lib/graphql-client.ts';
-import { issuesList, issuesShow } from './commands/issues.ts';
-import { projectsList, projectsShow } from './commands/projects.ts';
-import { teamsList, teamsShow } from './commands/teams.ts';
-import { notificationsList } from './commands/notifications.ts';
+import { list as issuesList } from './commands/issues/list/index.ts';
+import { show as issuesShow } from './commands/issues/show/index.ts';
+import { list as projectsList } from './commands/projects/list/index.ts';
+import { show as projectsShow } from './commands/projects/show/index.ts';
+import { list as teamsList } from './commands/teams/list/index.ts';
+import { show as teamsShow } from './commands/teams/show/index.ts';
+import { list as notificationsList } from './commands/notifications/list/index.ts';
 import { HELP_TEXT, VERSION } from './lib/help.ts';
 import type { CommandContext } from './types/cli.ts';
 

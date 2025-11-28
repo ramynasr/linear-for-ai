@@ -1,6 +1,6 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { formatTeamsList, formatTeamDetail } from '../../../src/lib/formatters/teams.ts';
-import type { LinearTeam, LinearConnection } from '../../../src/types/linear.ts';
+import { formatTeamDetail, formatTeamsList } from '../../../src/lib/formatters/teams.ts';
+import type { LinearConnection, LinearTeam } from '../../../src/types/linear.ts';
 
 const mockTeam: LinearTeam = {
   id: '1',
