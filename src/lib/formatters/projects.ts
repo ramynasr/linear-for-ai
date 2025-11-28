@@ -1,5 +1,5 @@
-import type { LinearProject, LinearConnection } from '../../types/linear.ts';
-import { formatTable, formatKeyValue, formatSection } from './markdown.ts';
+import type { LinearConnection, LinearProject } from '../../types/linear.ts';
+import { formatKeyValue, formatSection, formatTable } from './markdown.ts';
 
 /**
  * Field definitions mapping field names to human-readable titles
@@ -60,7 +60,10 @@ function formatFieldValue(project: LinearProject, field: string): string {
     return `${value}%`;
   }
 
-  if ((field === 'startDate' || field === 'targetDate' || field === 'createdAt' || field === 'updatedAt') && typeof value === 'string') {
+  if (
+    (field === 'startDate' || field === 'targetDate' || field === 'createdAt' ||
+      field === 'updatedAt') && typeof value === 'string'
+  ) {
     return new Date(value).toLocaleDateString();
   }
 
@@ -95,11 +98,15 @@ export function formatProjectsList(
   format: 'markdown' | 'json',
 ): string {
   if (format === 'json') {
-    return JSON.stringify({
-      data: {
-        projects: connection,
+    return JSON.stringify(
+      {
+        data: {
+          projects: connection,
+        },
       },
-    }, null, 2);
+      null,
+      2,
+    );
   }
 
   const { nodes, pageInfo } = connection;
@@ -111,9 +118,7 @@ export function formatProjectsList(
   // Determine which fields are present in the data
   const fields = getAvailableFields(nodes);
   const headers = fields.map((field) => getFieldTitle(field));
-  const rows = nodes.map((project) =>
-    fields.map((field) => formatFieldValue(project, field))
-  );
+  const rows = nodes.map((project) => fields.map((field) => formatFieldValue(project, field)));
 
   const table = formatTable(headers, rows);
   const header = `## Projects (${nodes.length} result${nodes.length === 1 ? '' : 's'})`;
@@ -121,7 +126,8 @@ export function formatProjectsList(
   let output = `${header}\n\n${table}`;
 
   if (pageInfo.hasNextPage) {
-    output += `\n\nShowing ${nodes.length} results. Use --cursor=${pageInfo.endCursor} for next page.`;
+    output +=
+      `\n\nShowing ${nodes.length} results. Use --cursor=${pageInfo.endCursor} for next page.`;
   }
 
   return output;
@@ -132,11 +138,15 @@ export function formatProjectsList(
  */
 export function formatProjectDetail(project: LinearProject, format: 'markdown' | 'json'): string {
   if (format === 'json') {
-    return JSON.stringify({
-      data: {
-        project,
+    return JSON.stringify(
+      {
+        data: {
+          project,
+        },
       },
-    }, null, 2);
+      null,
+      2,
+    );
   }
 
   const pairs: Array<[string, string]> = [

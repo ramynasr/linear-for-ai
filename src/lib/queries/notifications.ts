@@ -1,6 +1,6 @@
 import { buildFieldsString, toGraphQLSyntax } from '../graphql-syntax.ts';
 
-export interface TeamsListOptions {
+export interface NotificationsListOptions {
   fields?: string[];
   limit?: number;
   cursor?: string;
@@ -8,25 +8,44 @@ export interface TeamsListOptions {
 }
 
 /**
- * Build GraphQL query for listing teams
+ * Build GraphQL query for listing notifications
  */
-export function buildTeamsListQuery(options: TeamsListOptions): string {
+export function buildNotificationsListQuery(options: NotificationsListOptions): string {
   const fields = options.fields || [
     'id',
-    'key',
-    'name',
+    'title',
+    'subtitle',
     'url',
+    'createdAt',
   ];
+
+  // Always ensure createdAt is included (required for formatting)
+  if (!fields.includes('createdAt')) {
+    fields.push('createdAt');
+  }
 
   const paginationArgs: string[] = [];
   if (options.limit) {
     paginationArgs.push(`first: ${options.limit}`);
   }
+
   if (options.cursor) {
     paginationArgs.push(`after: "${options.cursor}"`);
   }
 
-  const filterArg = options.filter ? `, filter: ${toGraphQLSyntax(options.filter)}` : '';
+  // Default filter: notifications from last 30 days
+  let filter = options.filter;
+  if (!filter) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    filter = {
+      createdAt: {
+        gte: thirtyDaysAgo.toISOString(),
+      },
+    };
+  }
+
+  const filterArg = filter ? `, filter: ${toGraphQLSyntax(filter)}` : '';
   const paginationStr = paginationArgs.length > 0 ? paginationArgs.join(', ') : '';
 
   // Only include parentheses if there are arguments
@@ -34,7 +53,7 @@ export function buildTeamsListQuery(options: TeamsListOptions): string {
 
   return `
     query {
-      teams${argsStr} {
+      notifications${argsStr} {
         nodes {
           ${buildFieldsString(fields)}
         }
@@ -44,27 +63,6 @@ export function buildTeamsListQuery(options: TeamsListOptions): string {
           startCursor
           endCursor
         }
-      }
-    }
-  `;
-}
-
-/**
- * Build GraphQL query for showing a single team
- */
-export function buildTeamShowQuery(id: string, fields?: string[]): string {
-  const fieldList = fields || [
-    'id',
-    'key',
-    'name',
-    'description',
-    'url',
-  ];
-
-  return `
-    query {
-      team(id: "${id}") {
-        ${buildFieldsString(fieldList)}
       }
     }
   `;

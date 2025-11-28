@@ -62,6 +62,22 @@ export interface LinearUser {
   avatarUrl?: string;
 }
 
+export interface LinearNotification {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: string;
+  category: string;
+  url: string;
+  inboxUrl: string;
+  actor?: LinearUser;
+  readAt?: string;
+  snoozedUntilAt?: string;
+  archivedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface LinearPageInfo {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
