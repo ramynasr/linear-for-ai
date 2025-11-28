@@ -75,4 +75,4 @@ EOF
 
 echo "Formula updated successfully!"
 echo "Changes:"
-git -C "$TAP_REPO" diff "$FORMULA_FILE"
+git -C "$TAP_REPO" diff Formula/linear-for-ai.rb
