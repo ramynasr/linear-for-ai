@@ -13,6 +13,9 @@ dist/
 # Internal docs (per CLAUDE.md)
 internal-docs/
 
+# Git worktrees
+.worktrees/
+
 # Dependencies (if using npm modules)
 node_modules/
 
