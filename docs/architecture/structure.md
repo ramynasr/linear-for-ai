@@ -49,6 +49,7 @@ src/
 **New command:** Create `src/commands/{resource}/{action}/`
 
 **Command-specific logic:** In command's own directory with three files:
+
 - `index.ts` - Main handler function
 - `query.ts` - GraphQL query builder
 - `formatter.ts` - Output formatter
@@ -93,6 +94,7 @@ export async function list(
 ```
 
 **Key responsibilities:**
+
 - Parse command options using `lib/utils/command.ts` utilities
 - Call query builder from `./query.ts`
 - Execute GraphQL client
@@ -133,6 +135,7 @@ export function buildQuery(options: BuildQueryOptions): string {
 ```
 
 **Key responsibilities:**
+
 - Accept structured options
 - Build valid GraphQL query string
 - Use shared utilities from `lib/utils/query.ts` for field formatting and pagination
@@ -153,6 +156,7 @@ export function formatIssuesList(
 ```
 
 **Key responsibilities:**
+
 - Accept API response data and format type
 - Call resource-specific markdown formatter from `lib/formatters/`
 - Use `formatOutput()` from `lib/utils/formatter.ts` to route to markdown or JSON
@@ -246,16 +250,19 @@ Reusable GraphQL query building functions:
 ```typescript
 buildFieldSelection(fields: string[]): string
 ```
+
 Formats a fields array as a newline-separated string with proper indentation for GraphQL.
 
 ```typescript
 buildPaginationParams(limit: number, cursor?: string): Record<string, unknown>
 ```
+
 Builds pagination parameters object with `first` and optional `after` properties.
 
 ```typescript
 buildFilterClause(filter?: Record<string, unknown>): string
 ```
+
 Converts a filter object to GraphQL filter syntax, or returns empty string if no filter.
 
 ### lib/utils/formatter.ts
@@ -265,16 +272,19 @@ Reusable output formatting functions:
 ```typescript
 formatOutput(data: unknown, format: 'markdown' | 'json', markdownOutput: string): string
 ```
+
 Routes output to appropriate format. Returns `markdownOutput` for markdown format, or `JSON.stringify(data)` for JSON format.
 
 ```typescript
 formatEmptyResult(resourceName: string): string
 ```
+
 Returns a consistent "No {resource} found." message.
 
 ```typescript
 formatPaginationInfo(hasNextPage: boolean, endCursor?: string): string
 ```
+
 Returns pagination continuation instructions when there are more results.
 
 ### lib/utils/command.ts
@@ -284,11 +294,13 @@ Reusable command parsing functions:
 ```typescript
 parseFilter(filterString?: string): Record<string, unknown> | undefined
 ```
+
 Parses JSON-formatted filter string from CLI, throws with helpful error if invalid JSON.
 
 ```typescript
 getFieldsOrDefault(fieldsString: string | undefined, defaultFields: string[]): string[]
 ```
+
 Returns parsed fields from comma-separated string, or provided defaults if no fields specified.
 
 ## Benefits of This Structure
@@ -300,6 +312,7 @@ Each command is a self-contained unit. Looking for how `issues list` works? Go t
 ### 2. Self-Contained Commands
 
 All code for one command lives in one place:
+
 - `query.ts` - What to ask the API
 - `formatter.ts` - How to display it
 - `index.ts` - Orchestration logic
@@ -309,6 +322,7 @@ Changes to one command don't touch unrelated commands.
 ### 3. Independently Testable
 
 Each layer can be tested in isolation:
+
 - Test `query.ts` for correct GraphQL generation
 - Test `formatter.ts` for correct output formatting
 - Test `index.ts` for integration with mocked client
@@ -343,6 +357,7 @@ src/commands/issues/create/
 ```
 
 **query.ts** - Build mutation:
+
 ```typescript
 export interface BuildQueryOptions {
   teamId: string;
@@ -370,6 +385,7 @@ export function buildQuery(options: BuildQueryOptions): string {
 ```
 
 **formatter.ts** - Format response:
+
 ```typescript
 export function formatIssueCreate(
   issue: LinearIssue,
@@ -381,6 +397,7 @@ export function formatIssueCreate(
 ```
 
 **index.ts** - Handler:
+
 ```typescript
 export async function create(
   client: GraphQLClient,

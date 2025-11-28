@@ -18,7 +18,9 @@ export function buildQuery(options: BuildQueryOptions): string {
 
   return `
     query {
-      notifications(first: ${params.first}${cursor ? `, after: "${params.after}"` : ''}${filterClause}) {
+      notifications(first: ${params.first}${
+    cursor ? `, after: "${params.after}"` : ''
+  }${filterClause}) {
         nodes {
           ${buildFieldSelection(fields)}
         }
