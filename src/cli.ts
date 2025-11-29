@@ -8,6 +8,7 @@ import { list as issuesList } from './commands/issues/list/index.ts';
 import { show as issuesShow } from './commands/issues/show/index.ts';
 import { list as projectsList } from './commands/projects/list/index.ts';
 import { show as projectsShow } from './commands/projects/show/index.ts';
+import { showMyUpdates as projectsShowMyUpdates } from './commands/projects/show-my-updates/index.ts';
 import { list as teamsList } from './commands/teams/list/index.ts';
 import { show as teamsShow } from './commands/teams/show/index.ts';
 import { list as notificationsList } from './commands/notifications/list/index.ts';
@@ -69,6 +70,8 @@ async function main() {
           throw new Error('Project ID required for show command');
         }
         output = await projectsShow(client, context, parsed.args[0], parsed.options);
+      } else if (parsed.action === 'show-my-updates') {
+        output = await projectsShowMyUpdates(client, context, parsed.options);
       } else {
         throw new Error(`Unknown action for projects: ${parsed.action}`);
       }

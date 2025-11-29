@@ -15,8 +15,17 @@ export interface ParsedCommand {
  */
 export function parseArgs(args: string[]): ParsedCommand {
   const parsed = denoParseArgs(args, {
-    boolean: ['help', 'version', 'debug', 'no-color', 'dry-run', 'allow-writes', 'fetch-all'],
-    string: ['format', 'config', 'filter', 'fields', 'cursor', 'limit'],
+    boolean: [
+      'help',
+      'version',
+      'debug',
+      'no-color',
+      'dry-run',
+      'allow-writes',
+      'fetch-all',
+      'show-all-issue-updates',
+    ],
+    string: ['format', 'config', 'filter', 'fields', 'cursor', 'limit', 'since'],
     alias: {
       h: 'help',
       v: 'version',
@@ -49,6 +58,8 @@ export function parseArgs(args: string[]): ParsedCommand {
       dryRun: parsed['dry-run'],
       allowWrites: parsed['allow-writes'],
       fetchAll: parsed['fetch-all'],
+      since: parsed.since,
+      showAllIssueUpdates: parsed['show-all-issue-updates'],
     },
     showHelp: parsed.help || (!resource && !parsed.version),
     showVersion: parsed.version,
