@@ -16,6 +16,10 @@ const mockProject: LinearProject = {
     displayName: 'Alice',
     email: 'alice@example.com',
   },
+  status: {
+    name: 'In Progress',
+    type: 'started',
+  },
   url: 'https://linear.app/team/project/q1-engineering-goals',
 };
 
@@ -52,4 +56,19 @@ Deno.test('formatProjectDetail - formats single project', () => {
   assertStringIncludes(result, '65%');
   assertStringIncludes(result, 'Lead:');
   assertStringIncludes(result, '@Alice');
+});
+
+Deno.test('formatProjectsList - handles nested fields with dot notation', () => {
+  const connection: LinearConnection<LinearProject> = {
+    nodes: [mockProject],
+    pageInfo: { hasNextPage: false, hasPreviousPage: false },
+  };
+
+  // Simulate user requesting specific fields including nested ones
+  const fields = ['id', 'name', 'status.name'];
+  const result = formatProjectsList(connection, 'markdown', fields);
+
+  // Should show the status name, NOT "[object Object]"
+  assertStringIncludes(result, 'In Progress');
+  assertEquals(result.includes('[object Object]'), false, 'Should not contain [object Object]');
 });

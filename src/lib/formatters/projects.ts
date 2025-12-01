@@ -8,20 +8,48 @@ import { formatKeyValue, formatSection, formatTable } from './markdown.ts';
 const FIELD_DEFINITIONS: Record<string, string | Record<string, string>> = {
   id: 'ID',
   name: 'Name',
+  slugId: 'Slug',
   state: 'State',
+  status: { name: 'Status', type: 'Status Type', color: 'Status Color', description: 'Status Description' },
   progress: 'Progress',
+  priority: 'Priority',
+  priorityLabel: 'Priority',
+  health: 'Health',
+  scope: 'Scope',
+  color: 'Color',
+  icon: 'Icon',
   startDate: 'Start Date',
   targetDate: 'Target Date',
+  startedAt: 'Started At',
+  completedAt: 'Completed At',
+  canceledAt: 'Canceled At',
   createdAt: 'Created',
   updatedAt: 'Updated',
+  archivedAt: 'Archived',
+  trashed: 'Trashed',
   url: 'URL',
-  lead: { displayName: 'Lead' },
+  lead: { displayName: 'Lead', name: 'Lead Name', email: 'Lead Email' },
+  creator: { displayName: 'Creator', name: 'Creator Name', email: 'Creator Email' },
 };
 
 /**
  * Get human-readable title for a field
+ * Handles both simple fields and nested fields with dot notation (e.g., "status.name")
  */
 function getFieldTitle(field: string): string {
+  // Handle nested fields with dot notation
+  if (field.includes('.')) {
+    const [parent, child] = field.split('.');
+    const parentDef = FIELD_DEFINITIONS[parent];
+
+    if (parentDef && typeof parentDef === 'object' && parentDef[child]) {
+      return parentDef[child];
+    }
+
+    // If not in definitions, use child name as title
+    return child;
+  }
+
   const definition = FIELD_DEFINITIONS[field];
 
   if (!definition) {
@@ -40,15 +68,34 @@ function getFieldTitle(field: string): string {
 
 /**
  * Format a field value for display
+ * Handles both simple fields and nested fields with dot notation (e.g., "status.name")
  */
 function formatFieldValue(project: LinearProject, field: string): string {
+  // Handle nested fields with dot notation
+  if (field.includes('.')) {
+    const [parent, child] = field.split('.');
+    const parentValue = project[parent as keyof LinearProject];
+
+    if (parentValue === null || parentValue === undefined) {
+      return 'N/A';
+    }
+
+    if (typeof parentValue === 'object' && parentValue !== null) {
+      const childValue = (parentValue as any)[child];
+      return childValue !== null && childValue !== undefined ? String(childValue) : 'N/A';
+    }
+
+    return 'N/A';
+  }
+
+  // Handle simple fields
   const value = project[field as keyof LinearProject];
 
   if (value === null || value === undefined) {
     return 'N/A';
   }
 
-  // Handle nested fields
+  // Handle nested fields defined in FIELD_DEFINITIONS (backward compatibility)
   const definition = FIELD_DEFINITIONS[field];
   if (typeof definition === 'object' && typeof value === 'object' && value !== null) {
     const nestedField = Object.keys(definition)[0];
@@ -96,6 +143,7 @@ function getAvailableFields(nodes: LinearProject[]): string[] {
 export function formatProjectsList(
   connection: LinearConnection<LinearProject>,
   format: 'markdown' | 'json',
+  fields?: string[],
 ): string {
   if (format === 'json') {
     return JSON.stringify(
@@ -115,10 +163,12 @@ export function formatProjectsList(
     return '## Projects\n\nNo projects found.';
   }
 
-  // Determine which fields are present in the data
-  const fields = getAvailableFields(nodes);
-  const headers = fields.map((field) => getFieldTitle(field));
-  const rows = nodes.map((project) => fields.map((field) => formatFieldValue(project, field)));
+  // Use provided fields or auto-detect from data
+  const displayFields = fields || getAvailableFields(nodes);
+  const headers = displayFields.map((field) => getFieldTitle(field));
+  const rows = nodes.map((project) =>
+    displayFields.map((field) => formatFieldValue(project, field))
+  );
 
   const table = formatTable(headers, rows);
   const header = `## Projects (${nodes.length} result${nodes.length === 1 ? '' : 's'})`;

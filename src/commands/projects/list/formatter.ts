@@ -5,7 +5,8 @@ import { formatOutput } from '../../../lib/utils/formatter.ts';
 export function formatProjectsList(
   connection: LinearConnection<LinearProject>,
   format: 'markdown' | 'json',
+  fields?: string[],
 ): string {
-  const markdownOutput = formatMarkdown(connection, 'markdown');
+  const markdownOutput = formatMarkdown(connection, 'markdown', fields);
   return formatOutput(connection, format, markdownOutput);
 }

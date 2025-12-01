@@ -8,7 +8,8 @@ import { formatOutput } from '../../../lib/utils/formatter.ts';
 export function formatIssuesList(
   connection: LinearConnection<LinearIssue>,
   format: 'markdown' | 'json',
+  fields?: string[],
 ): string {
-  const markdownOutput = formatMarkdown(connection);
+  const markdownOutput = formatMarkdown(connection, fields);
   return formatOutput(connection, format, markdownOutput);
 }

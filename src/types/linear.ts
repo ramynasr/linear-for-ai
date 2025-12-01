@@ -5,28 +5,65 @@
 export interface LinearIssue {
   id: string;
   identifier: string;
+  number?: number;
   title: string;
   description?: string;
   priority: number;
   priorityLabel: string;
+  estimate?: number;
+  dueDate?: string;
+  branchName?: string;
   state: LinearWorkflowState;
   assignee?: LinearUser;
+  creator?: LinearUser;
+  team?: LinearTeam;
   project?: LinearProject;
   cycle?: LinearCycle;
+  parent?: {
+    identifier: string;
+    title: string;
+  };
   createdAt: string;
   updatedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  canceledAt?: string;
+  archivedAt?: string;
+  snoozedUntilAt?: string;
+  trashed?: boolean;
   url: string;
 }
 
 export interface LinearProject {
   id: string;
   name: string;
+  slugId?: string;
   description?: string;
   state: string;
+  status?: {
+    name: string;
+    type: string;
+    color?: string;
+    description?: string;
+  };
   progress: number;
+  priority?: number;
+  priorityLabel?: string;
+  health?: string;
+  scope?: number;
+  color?: string;
+  icon?: string;
   startDate?: string;
   targetDate?: string;
+  startedAt?: string;
+  completedAt?: string;
+  canceledAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  archivedAt?: string;
+  trashed?: boolean;
   lead?: LinearUser;
+  creator?: LinearUser;
   url: string;
 }
 
@@ -34,7 +71,9 @@ export interface LinearTeam {
   id: string;
   key: string;
   name: string;
+  displayName?: string;
   description?: string;
+  color?: string;
   url: string;
 }
 
@@ -52,6 +91,7 @@ export interface LinearWorkflowState {
   name: string;
   type: string;
   color: string;
+  description?: string;
 }
 
 export interface LinearUser {

@@ -34,5 +34,5 @@ export async function list(
   }
 
   const format = options.format || context.config.defaults.format;
-  return formatProjectsList(response.data.projects, format);
+  return formatProjectsList(response.data.projects, format, fields);
 }
