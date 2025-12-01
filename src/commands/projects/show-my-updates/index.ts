@@ -66,9 +66,9 @@ interface CombinedResponse {
 
 export async function showMyUpdates(
   client: GraphQLClient,
-  context: CommandContext,
+  context: CommandContext<ShowMyUpdatesOptions>,
 ): Promise<string> {
-  const options = context.options as ShowMyUpdatesOptions;
+  const options = context.options;
   // Calculate since date (14 days ago by default)
   const sinceDate = options.since || calculateDefaultSinceDate();
 

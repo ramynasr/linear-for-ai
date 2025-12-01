@@ -11,9 +11,9 @@ import { buildMyResourcesFilter, mergeFilters } from '../../../lib/utils/filters
  */
 export async function list(
   client: GraphQLClient,
-  context: CommandContext,
+  context: CommandContext<ListOptions>,
 ): Promise<string> {
-  const options = context.options as ListOptions;
+  const options = context.options;
   const fields = getFieldsOrDefault(
     options.fields,
     context.config.defaults.fields.issues,
