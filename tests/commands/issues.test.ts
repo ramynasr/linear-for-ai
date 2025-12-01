@@ -1,5 +1,6 @@
-import { assertEquals, assertStringIncludes } from '@std/assert';
+import { assertEquals, assertRejects, assertStringIncludes } from '@std/assert';
 import { list as issuesList } from '../../src/commands/issues/list/index.ts';
+import { show as issuesShow } from '../../src/commands/issues/show/index.ts';
 import { GraphQLClient } from '../../src/lib/graphql-client.ts';
 import { DEFAULT_CONFIG } from '../../src/types/config.ts';
 
@@ -180,4 +181,44 @@ Deno.test('issuesList - merges default filter with user filter using AND', async
   assertStringIncludes(query, 'assignee:'); // from default filter
   assertStringIncludes(query, 'state:'); // from user filter
   assertStringIncludes(query, 'started'); // from user filter
+});
+
+Deno.test('issuesShow - throws error with no arguments', async () => {
+  const client = new MockGraphQLClient({});
+
+  await assertRejects(
+    async () => {
+      await issuesShow(
+        client,
+        {
+          config: DEFAULT_CONFIG,
+          env: { apiKey: 'test' },
+          options: {},
+          args: [],
+        },
+      );
+    },
+    Error,
+    'Exactly one issue identifier is required for the show command',
+  );
+});
+
+Deno.test('issuesShow - throws error with multiple arguments', async () => {
+  const client = new MockGraphQLClient({});
+
+  await assertRejects(
+    async () => {
+      await issuesShow(
+        client,
+        {
+          config: DEFAULT_CONFIG,
+          env: { apiKey: 'test' },
+          options: {},
+          args: ['ABC-123', 'XYZ-456'],
+        },
+      );
+    },
+    Error,
+    'Exactly one issue identifier is required for the show command',
+  );
 });

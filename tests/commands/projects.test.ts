@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from '@std/assert';
+import { assertEquals, assertRejects, assertStringIncludes } from '@std/assert';
 import { list as projectsList } from '../../src/commands/projects/list/index.ts';
 import { show as projectsShow } from '../../src/commands/projects/show/index.ts';
 import { GraphQLClient } from '../../src/lib/graphql-client.ts';
@@ -205,4 +205,44 @@ Deno.test('projectsList - merges default filter with user filter using AND', asy
   assertStringIncludes(query, 'lead:'); // from default filter
   assertStringIncludes(query, 'state:'); // from user filter
   assertStringIncludes(query, 'started'); // from user filter
+});
+
+Deno.test('projectsShow - throws error with no arguments', async () => {
+  const client = new MockGraphQLClient({});
+
+  await assertRejects(
+    async () => {
+      await projectsShow(
+        client,
+        {
+          config: DEFAULT_CONFIG,
+          env: { apiKey: 'test' },
+          options: {},
+          args: [],
+        },
+      );
+    },
+    Error,
+    'Exactly one project ID is required for the show command',
+  );
+});
+
+Deno.test('projectsShow - throws error with multiple arguments', async () => {
+  const client = new MockGraphQLClient({});
+
+  await assertRejects(
+    async () => {
+      await projectsShow(
+        client,
+        {
+          config: DEFAULT_CONFIG,
+          env: { apiKey: 'test' },
+          options: {},
+          args: ['project-1', 'project-2'],
+        },
+      );
+    },
+    Error,
+    'Exactly one project ID is required for the show command',
+  );
 });

@@ -12,10 +12,10 @@ export async function show(
   client: GraphQLClient,
   context: CommandContext<ShowOptions>,
 ): Promise<string> {
-  const identifier = context.args[0];
-  if (!identifier) {
-    throw new Error('Issue identifier required for show command');
+  if (context.args.length !== 1) {
+    throw new Error('Exactly one issue identifier is required for the show command');
   }
+  const identifier = context.args[0];
 
   const options = context.options;
   const fields = getFieldsOrDefault(
