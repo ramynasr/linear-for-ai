@@ -48,4 +48,6 @@ CONFIGURATION:
 For more information: https://github.com/ramynasr/linear-for-ai
 `;
 
-export const VERSION = '0.2.0';
+import denoConfig from '../../deno.json' with { type: 'json' };
+
+export const VERSION = denoConfig.version;
