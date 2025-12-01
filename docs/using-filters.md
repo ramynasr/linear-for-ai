@@ -12,11 +12,12 @@ linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
 
 ## Default Filtering Behavior
 
-**All list commands** show only resources related to you by default:
+**Issues and Projects list commands** show only resources related to you by default:
 
 - **Issues:** Assigned to you, created by you, or subscribed to
 - **Projects:** You are the lead, creator, or a member
-- **Other resources:** Similar relationship-based filtering
+
+Other list commands (like notifications) show all available resources by their nature.
 
 Use `--fetch-all` to see all resources in your workspace:
 

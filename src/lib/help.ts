@@ -7,8 +7,6 @@ USAGE:
 RESOURCES:
   issues          Manage and query issues
   projects        Manage and query projects
-  teams           View team information
-  cycles          View cycle information
   notifications   Query user notifications
 
 COMMON COMMANDS:
@@ -16,7 +14,6 @@ COMMON COMMANDS:
   linear-for-ai issues show <id>
   linear-for-ai projects list [--filter <filter>] [--fetch-all]
   linear-for-ai projects show <id>
-  linear-for-ai teams list
   linear-for-ai notifications list [--limit N]
 
 GLOBAL OPTIONS:
@@ -32,8 +29,11 @@ GLOBAL OPTIONS:
   -v, --version            Show version information
 
 FILTERING BEHAVIOR:
-  By default, all list commands show only resources related to you.
+  By default, issues and projects list commands show only resources related to you.
   Use --fetch-all to see all resources in your workspace.
+
+  - Issues: Shows issues assigned to you, created by you, or subscribed to
+  - Projects: Shows projects where you're the lead, creator, or a member
 
 EXAMPLES:
   # List your issues in progress
@@ -48,8 +48,8 @@ EXAMPLES:
   # List your projects
   linear-for-ai projects list
 
-  # List all workspace teams
-  linear-for-ai teams list --fetch-all
+  # List ALL projects (workspace-wide)
+  linear-for-ai projects list --fetch-all
 
   # List recent notifications
   linear-for-ai notifications list --limit 10

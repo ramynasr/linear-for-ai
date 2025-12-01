@@ -104,3 +104,80 @@ Deno.test('issuesList - throws error on invalid filter JSON', async () => {
     assertStringIncludes((error as Error).message, 'Invalid filter JSON');
   }
 });
+
+Deno.test('issuesList - applies default "my resources" filter by default', async () => {
+  const fixturePath = new URL('../../tests/fixtures/issues-list.json', import.meta.url).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  await issuesList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: {},
+    },
+    {}, // No fetchAll flag
+  );
+
+  // Verify query includes default filter with OR conditions for assignee/creator/subscribers
+  const query = client.lastQuery?.query || '';
+  assertStringIncludes(query, 'filter:');
+  assertStringIncludes(query, 'or:');
+  assertStringIncludes(query, 'assignee:');
+  assertStringIncludes(query, 'isMe:');
+  assertStringIncludes(query, 'creator:');
+  assertStringIncludes(query, 'subscribers:');
+});
+
+Deno.test('issuesList - bypasses default filter with fetchAll flag', async () => {
+  const fixturePath = new URL('../../tests/fixtures/issues-list.json', import.meta.url).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  await issuesList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: {},
+    },
+    { fetchAll: true },
+  );
+
+  // Verify query does NOT include default "my resources" filter
+  const query = client.lastQuery?.query || '';
+  // Should have no filter parameter at all
+  // Check that issues() doesn't have filter parameter (or only has first parameter)
+  assertStringIncludes(query, 'issues(first:');
+  // Should NOT have the default "my resources" filter with assignee/creator/subscribers
+  if (query.includes('filter:')) {
+    // If filter exists, it should NOT be the default one
+    assertEquals(query.includes('assignee:') && query.includes('isMe:'), false);
+  }
+});
+
+Deno.test('issuesList - merges default filter with user filter using AND', async () => {
+  const fixturePath = new URL('../../tests/fixtures/issues-list.json', import.meta.url).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  const userFilter = '{"state":{"type":{"eq":"started"}}}';
+  await issuesList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: {},
+    },
+    { filter: userFilter }, // No fetchAll flag
+  );
+
+  // Verify query includes AND with both default filter and user filter
+  const query = client.lastQuery?.query || '';
+  assertStringIncludes(query, 'and:');
+  assertStringIncludes(query, 'or:'); // from default filter
+  assertStringIncludes(query, 'assignee:'); // from default filter
+  assertStringIncludes(query, 'state:'); // from user filter
+  assertStringIncludes(query, 'started'); // from user filter
+});
