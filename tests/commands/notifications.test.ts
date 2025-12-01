@@ -32,9 +32,9 @@ Deno.test('notificationsList - returns formatted markdown', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: [],
     },
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, '## Notifications');
@@ -56,9 +56,9 @@ Deno.test('notificationsList - returns JSON format', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'json' },
+      args: [],
     },
-    { format: 'json' },
   );
 
   const parsed = JSON.parse(result);
@@ -81,9 +81,9 @@ Deno.test('notificationsList - passes filter to query', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { filter: filterJson },
+      args: [],
     },
-    { filter: filterJson },
   );
 
   // Verify the query includes the filter with GraphQL syntax (unquoted keys)
@@ -107,9 +107,9 @@ Deno.test('notificationsList - passes limit to query', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { limit: 25 },
+      args: [],
     },
-    { limit: 25 },
   );
 
   // Verify the query includes the limit
@@ -129,9 +129,9 @@ Deno.test('notificationsList - includes pagination message when hasNextPage', as
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: [],
     },
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, 'Use --cursor=cursor-end for next page');

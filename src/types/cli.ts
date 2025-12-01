@@ -28,13 +28,19 @@ export interface WriteOptions extends GlobalOptions {
   allowWrites?: boolean;
 }
 
-export interface CommandContext {
+/**
+ * Context passed to all command handlers containing configuration,
+ * environment, parsed options, and positional arguments.
+ *
+ * @template TOptions - The specific options type for the command (e.g., ListOptions, ShowOptions)
+ */
+export interface CommandContext<TOptions = Record<string, unknown>> {
+  /** Application configuration from config file */
   config: Config;
+  /** Environment variables and API credentials */
   env: Environment;
-  options: GlobalOptions;
+  /** Parsed command-line options (e.g., --format, --debug, --filter) */
+  options: TOptions;
+  /** Positional arguments after the command (e.g., issue ID for show commands) */
+  args: string[];
 }
-
-export type CommandHandler<T = unknown> = (
-  context: CommandContext,
-  ...args: unknown[]
-) => Promise<T>;

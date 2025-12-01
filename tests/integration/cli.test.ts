@@ -38,3 +38,29 @@ Deno.test('CLI - errors without API key', async () => {
   assertEquals(code, 1);
   assertEquals(output.includes('LINEAR_API_KEY'), true);
 });
+
+Deno.test('CLI - errors on unknown resource', async () => {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ['run', '--allow-net', '--allow-env', '--allow-read', 'src/cli.ts', 'unknown', 'list'],
+    env: { LINEAR_API_KEY: 'test-key' },
+  });
+
+  const { code, stderr } = await command.output();
+  const output = new TextDecoder().decode(stderr);
+
+  assertEquals(code, 1);
+  assertEquals(output.includes('Unknown command: unknown list'), true);
+});
+
+Deno.test('CLI - errors on unknown action', async () => {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ['run', '--allow-net', '--allow-env', '--allow-read', 'src/cli.ts', 'issues', 'unknown'],
+    env: { LINEAR_API_KEY: 'test-key' },
+  });
+
+  const { code, stderr } = await command.output();
+  const output = new TextDecoder().decode(stderr);
+
+  assertEquals(code, 1);
+  assertEquals(output.includes('Unknown command: issues unknown'), true);
+});

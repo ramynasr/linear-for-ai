@@ -4,14 +4,7 @@ import { parseArgs } from './lib/cli-parser.ts';
 import { loadEnvironment } from './lib/env.ts';
 import { loadConfig } from './lib/config.ts';
 import { GraphQLClient } from './lib/graphql-client.ts';
-import { list as issuesList } from './commands/issues/list/index.ts';
-import { show as issuesShow } from './commands/issues/show/index.ts';
-import { list as projectsList } from './commands/projects/list/index.ts';
-import { show as projectsShow } from './commands/projects/show/index.ts';
-import { showMyUpdates as projectsShowMyUpdates } from './commands/projects/show-my-updates/index.ts';
-import { list as teamsList } from './commands/teams/list/index.ts';
-import { show as teamsShow } from './commands/teams/show/index.ts';
-import { list as notificationsList } from './commands/notifications/list/index.ts';
+import { CommandFactory } from './commands/factory.ts';
 import { HELP_TEXT, VERSION } from './lib/help.ts';
 import type { CommandContext } from './types/cli.ts';
 
@@ -41,60 +34,29 @@ async function main() {
       proxy: env.httpsProxy || env.httpProxy,
     });
 
+    // Validate resource and action are present
+    if (!parsed.resource || !parsed.action) {
+      console.error('Error: Resource and action are required');
+      console.log(HELP_TEXT);
+      Deno.exit(1);
+    }
+
     // Build command context
     const context: CommandContext = {
       config,
       env,
       options: parsed.options,
+      args: parsed.args,
     };
 
-    // Route to command handler
-    let output: string;
+    // Get command handler from factory
+    const handler = CommandFactory.get(parsed.resource, parsed.action);
 
-    if (parsed.resource === 'issues') {
-      if (parsed.action === 'list') {
-        output = await issuesList(client, context, parsed.options);
-      } else if (parsed.action === 'show') {
-        if (!parsed.args[0]) {
-          throw new Error('Issue identifier required for show command');
-        }
-        output = await issuesShow(client, context, parsed.args[0], parsed.options);
-      } else {
-        throw new Error(`Unknown action for issues: ${parsed.action}`);
-      }
-    } else if (parsed.resource === 'projects') {
-      if (parsed.action === 'list') {
-        output = await projectsList(client, context, parsed.options);
-      } else if (parsed.action === 'show') {
-        if (!parsed.args[0]) {
-          throw new Error('Project ID required for show command');
-        }
-        output = await projectsShow(client, context, parsed.args[0], parsed.options);
-      } else if (parsed.action === 'show-my-updates') {
-        output = await projectsShowMyUpdates(client, context, parsed.options);
-      } else {
-        throw new Error(`Unknown action for projects: ${parsed.action}`);
-      }
-    } else if (parsed.resource === 'teams') {
-      if (parsed.action === 'list') {
-        output = await teamsList(client, context, parsed.options);
-      } else if (parsed.action === 'show') {
-        if (!parsed.args[0]) {
-          throw new Error('Team ID required for show command');
-        }
-        output = await teamsShow(client, context, parsed.args[0], parsed.options);
-      } else {
-        throw new Error(`Unknown action for teams: ${parsed.action}`);
-      }
-    } else if (parsed.resource === 'notifications') {
-      if (parsed.action === 'list') {
-        output = await notificationsList(client, context, parsed.options);
-      } else {
-        throw new Error(`Unknown action for notifications: ${parsed.action}`);
-      }
-    } else {
-      throw new Error(`Unknown resource: ${parsed.resource}`);
+    if (!handler) {
+      throw new Error(`Unknown command: ${parsed.resource} ${parsed.action}`);
     }
+
+    const output = await handler(client, context);
 
     // Output result
     console.log(output);

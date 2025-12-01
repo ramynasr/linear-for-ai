@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from '@std/assert';
+import { assertEquals, assertRejects, assertStringIncludes } from '@std/assert';
 import { list as projectsList } from '../../src/commands/projects/list/index.ts';
 import { show as projectsShow } from '../../src/commands/projects/show/index.ts';
 import { GraphQLClient } from '../../src/lib/graphql-client.ts';
@@ -33,9 +33,9 @@ Deno.test('projectsList - returns formatted markdown', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: [],
     },
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, '## Projects');
@@ -55,9 +55,9 @@ Deno.test('projectsList - returns JSON format', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'json' },
+      args: [],
     },
-    { format: 'json' },
   );
 
   const parsed = JSON.parse(result);
@@ -79,9 +79,9 @@ Deno.test('projectsList - passes filter to query', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { filter: filterJson },
+      args: [],
     },
-    { filter: filterJson },
   );
 
   // Verify the query includes the filter with GraphQL syntax (unquoted keys)
@@ -111,13 +111,138 @@ Deno.test('projectsShow - returns formatted markdown', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: ['project-id-123'],
     },
-    'project-id-123',
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, '## Q1 Engineering Goals');
   assertStringIncludes(result, 'State:');
   assertStringIncludes(result, 'Progress:');
+});
+
+Deno.test('projectsList - applies default "my resources" filter by default', async () => {
+  const fixturePath = new URL(
+    '../../tests/fixtures/projects-list.json',
+    import.meta.url,
+  ).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  await projectsList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: {}, // No fetchAll flag
+      args: [],
+    },
+  );
+
+  // Verify query includes default filter with OR conditions for lead/creator/members
+  const query = client.lastQuery?.query || '';
+  assertStringIncludes(query, 'filter:');
+  assertStringIncludes(query, 'or:');
+  assertStringIncludes(query, 'lead:');
+  assertStringIncludes(query, 'isMe:');
+  assertStringIncludes(query, 'creator:');
+  assertStringIncludes(query, 'members:');
+});
+
+Deno.test('projectsList - bypasses default filter with fetchAll flag', async () => {
+  const fixturePath = new URL(
+    '../../tests/fixtures/projects-list.json',
+    import.meta.url,
+  ).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  await projectsList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: { fetchAll: true },
+      args: [],
+    },
+  );
+
+  // Verify query does NOT include default "my resources" filter
+  const query = client.lastQuery?.query || '';
+  // Should have no filter parameter at all
+  // Check that projects() doesn't have filter parameter (or only has first parameter)
+  assertStringIncludes(query, 'projects(first:');
+  // Should NOT have the default "my resources" filter with lead/creator/members
+  if (query.includes('filter:')) {
+    // If filter exists, it should NOT be the default one
+    assertEquals(query.includes('lead:') && query.includes('isMe:'), false);
+  }
+});
+
+Deno.test('projectsList - merges default filter with user filter using AND', async () => {
+  const fixturePath = new URL(
+    '../../tests/fixtures/projects-list.json',
+    import.meta.url,
+  ).pathname;
+  const fixture = JSON.parse(await Deno.readTextFile(fixturePath));
+
+  const client = new MockGraphQLClient(fixture);
+  const userFilter = '{"state":{"eq":"started"}}';
+  await projectsList(
+    client,
+    {
+      config: DEFAULT_CONFIG,
+      env: { apiKey: 'test' },
+      options: { filter: userFilter }, // No fetchAll flag
+      args: [],
+    },
+  );
+
+  // Verify query includes AND with both default filter and user filter
+  const query = client.lastQuery?.query || '';
+  assertStringIncludes(query, 'and:');
+  assertStringIncludes(query, 'or:'); // from default filter
+  assertStringIncludes(query, 'lead:'); // from default filter
+  assertStringIncludes(query, 'state:'); // from user filter
+  assertStringIncludes(query, 'started'); // from user filter
+});
+
+Deno.test('projectsShow - throws error with no arguments', async () => {
+  const client = new MockGraphQLClient({});
+
+  await assertRejects(
+    async () => {
+      await projectsShow(
+        client,
+        {
+          config: DEFAULT_CONFIG,
+          env: { apiKey: 'test' },
+          options: {},
+          args: [],
+        },
+      );
+    },
+    Error,
+    'Exactly one project ID is required for the show command',
+  );
+});
+
+Deno.test('projectsShow - throws error with multiple arguments', async () => {
+  const client = new MockGraphQLClient({});
+
+  await assertRejects(
+    async () => {
+      await projectsShow(
+        client,
+        {
+          config: DEFAULT_CONFIG,
+          env: { apiKey: 'test' },
+          options: {},
+          args: ['project-1', 'project-2'],
+        },
+      );
+    },
+    Error,
+    'Exactly one project ID is required for the show command',
+  );
 });

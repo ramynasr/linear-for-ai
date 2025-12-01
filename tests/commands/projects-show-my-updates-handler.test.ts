@@ -37,8 +37,8 @@ Deno.test('showMyUpdates - calculates default since date (14 days ago)', async (
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
       options: {},
+      args: [],
     },
-    {},
   );
 
   // Calculate expected date (14 days ago)
@@ -69,9 +69,9 @@ Deno.test('showMyUpdates - uses provided since date', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { since: '2025-01-15' },
+      args: [],
     },
-    { since: '2025-01-15' },
   );
 
   assertStringIncludes(client.lastQuery?.query || '', 'gte: "2025-01-15"');
@@ -138,9 +138,9 @@ Deno.test('showMyUpdates - filters out empty projects', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: [],
     },
-    { format: 'markdown' },
   );
 
   // Should include projects with updates or issues
@@ -217,9 +217,9 @@ Deno.test('showMyUpdates - returns formatted markdown', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: [],
     },
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, '# My Project Updates');
@@ -267,9 +267,9 @@ Deno.test('showMyUpdates - returns JSON format', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'json' },
+      args: [],
     },
-    { format: 'json' },
   );
 
   const parsed = JSON.parse(result);
@@ -294,9 +294,9 @@ Deno.test('showMyUpdates - passes showAllIssueUpdates to query', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { showAllIssueUpdates: true },
+      args: [],
     },
-    { showAllIssueUpdates: true },
   );
 
   // Should only have updatedAt filter, not completedAt
@@ -322,9 +322,9 @@ Deno.test('showMyUpdates - passes pagination parameters', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { limit: 25, cursor: 'test-cursor' },
+      args: [],
     },
-    { limit: 25, cursor: 'test-cursor' },
   );
 
   assertStringIncludes(client.lastQuery?.query || '', 'first: 25');

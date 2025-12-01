@@ -7,20 +7,20 @@ USAGE:
 RESOURCES:
   issues          Manage and query issues
   projects        Manage and query projects
-  teams           View team information
-  cycles          View cycle information
   notifications   Query user notifications
 
 COMMON COMMANDS:
-  linear-for-ai issues list [--filter <filter>] [--limit N]
+  linear-for-ai issues list [--filter <filter>] [--limit N] [--fetch-all]
   linear-for-ai issues show <id>
-  linear-for-ai projects list
+  linear-for-ai projects list [--filter <filter>] [--fetch-all]
   linear-for-ai projects show <id>
-  linear-for-ai teams list
   linear-for-ai notifications list [--limit N]
 
 GLOBAL OPTIONS:
   --format <markdown|json>  Output format (default: markdown)
+  --fetch-all               Show all resources (default: only related to you)
+  --filter <json>           Filter results using Linear's filter syntax
+  --limit <number>          Maximum results per page (default: 50)
   --debug                   Show debug information
   --config <path>           Custom config file path
   --no-color                Disable ANSI colors
@@ -28,17 +28,30 @@ GLOBAL OPTIONS:
   -h, --help               Show this help message
   -v, --version            Show version information
 
+FILTERING BEHAVIOR:
+  By default, issues and projects list commands show only resources related to you.
+  Use --fetch-all to see all resources in your workspace.
+
+  - Issues: Shows issues assigned to you, created by you, or subscribed to
+  - Projects: Shows projects where you're the lead, creator, or a member
+
 EXAMPLES:
-  # List issues in progress
-  linear-for-ai issues list --filter 'status:in_progress'
+  # List your issues in progress
+  linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
+
+  # List ALL issues (workspace-wide)
+  linear-for-ai issues list --fetch-all
 
   # Show issue detail
   linear-for-ai issues show ENG-123
 
-  # List all projects in JSON format
-  linear-for-ai projects list --format json
+  # List your projects
+  linear-for-ai projects list
 
-  # List recent notifications (last 30 days)
+  # List ALL projects (workspace-wide)
+  linear-for-ai projects list --fetch-all
+
+  # List recent notifications
   linear-for-ai notifications list --limit 10
 
 CONFIGURATION:

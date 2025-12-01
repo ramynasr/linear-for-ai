@@ -7,9 +7,9 @@ import { getFieldsOrDefault, parseFilter } from '../../../lib/utils/command.ts';
 
 export async function list(
   client: GraphQLClient,
-  context: CommandContext,
-  options: ListOptions = {},
+  context: CommandContext<ListOptions>,
 ): Promise<string> {
+  const options = context.options;
   const fields = getFieldsOrDefault(
     options.fields,
     context.config.defaults.fields.notifications,
