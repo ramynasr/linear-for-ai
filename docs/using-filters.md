@@ -10,6 +10,36 @@ Filters are passed as JSON strings via the `--filter` flag:
 linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
 ```
 
+## Default Filtering Behavior
+
+**All list commands** show only resources related to you by default:
+
+- **Issues:** Assigned to you, created by you, or subscribed to
+- **Projects:** You are the lead, creator, or a member
+- **Other resources:** Similar relationship-based filtering
+
+Use `--fetch-all` to see all resources in your workspace:
+
+```bash
+# Default: only related resources
+linear-for-ai issues list
+linear-for-ai projects list
+
+# Workspace-wide view
+linear-for-ai issues list --fetch-all
+linear-for-ai projects list --fetch-all
+```
+
+This filtering applies **before** any `--filter` you provide. When you combine both:
+
+```bash
+# Your issues that are in progress
+linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
+
+# All issues that are in progress (workspace-wide)
+linear-for-ai issues list --fetch-all --filter '{"state":{"type":{"eq":"started"}}}'
+```
+
 ## How Filters Work
 
 1. **JSON Input**: You provide a filter as a JSON string
