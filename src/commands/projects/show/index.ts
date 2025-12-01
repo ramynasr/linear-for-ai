@@ -8,9 +8,13 @@ import { getFieldsOrDefault } from '../../../lib/utils/command.ts';
 export async function show(
   client: GraphQLClient,
   context: CommandContext,
-  id: string,
-  options: ShowOptions = {},
 ): Promise<string> {
+  const id = context.args[0];
+  if (!id) {
+    throw new Error('Project ID required for show command');
+  }
+
+  const options = context.options as ShowOptions;
   const fields = getFieldsOrDefault(
     options.fields,
     context.config.defaults.fields.projects,

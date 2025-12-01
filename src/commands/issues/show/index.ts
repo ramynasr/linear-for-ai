@@ -11,9 +11,13 @@ import { getFieldsOrDefault } from '../../../lib/utils/command.ts';
 export async function show(
   client: GraphQLClient,
   context: CommandContext,
-  identifier: string,
-  options: ShowOptions = {},
 ): Promise<string> {
+  const identifier = context.args[0];
+  if (!identifier) {
+    throw new Error('Issue identifier required for show command');
+  }
+
+  const options = context.options as ShowOptions;
   const fields = getFieldsOrDefault(
     options.fields,
     context.config.defaults.fields.issues,

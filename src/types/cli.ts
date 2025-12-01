@@ -31,10 +31,6 @@ export interface WriteOptions extends GlobalOptions {
 export interface CommandContext {
   config: Config;
   env: Environment;
-  options: GlobalOptions;
+  options: Record<string, unknown>;
+  args: string[];
 }
-
-export type CommandHandler<T = unknown> = (
-  context: CommandContext,
-  ...args: unknown[]
-) => Promise<T>;

@@ -33,9 +33,9 @@ Deno.test('projectsList - returns formatted markdown', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: [],
     },
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, '## Projects');
@@ -55,9 +55,9 @@ Deno.test('projectsList - returns JSON format', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'json' },
+      args: [],
     },
-    { format: 'json' },
   );
 
   const parsed = JSON.parse(result);
@@ -79,9 +79,9 @@ Deno.test('projectsList - passes filter to query', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { filter: filterJson },
+      args: [],
     },
-    { filter: filterJson },
   );
 
   // Verify the query includes the filter with GraphQL syntax (unquoted keys)
@@ -111,10 +111,9 @@ Deno.test('projectsShow - returns formatted markdown', async () => {
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { format: 'markdown' },
+      args: ['project-id-123'],
     },
-    'project-id-123',
-    { format: 'markdown' },
   );
 
   assertStringIncludes(result, '## Q1 Engineering Goals');
@@ -135,9 +134,9 @@ Deno.test('projectsList - applies default "my resources" filter by default', asy
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: {}, // No fetchAll flag
+      args: [],
     },
-    {}, // No fetchAll flag
   );
 
   // Verify query includes default filter with OR conditions for lead/creator/members
@@ -163,9 +162,9 @@ Deno.test('projectsList - bypasses default filter with fetchAll flag', async () 
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { fetchAll: true },
+      args: [],
     },
-    { fetchAll: true },
   );
 
   // Verify query does NOT include default "my resources" filter
@@ -194,9 +193,9 @@ Deno.test('projectsList - merges default filter with user filter using AND', asy
     {
       config: DEFAULT_CONFIG,
       env: { apiKey: 'test' },
-      options: {},
+      options: { filter: userFilter }, // No fetchAll flag
+      args: [],
     },
-    { filter: userFilter }, // No fetchAll flag
   );
 
   // Verify query includes AND with both default filter and user filter
