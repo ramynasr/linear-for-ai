@@ -1,6 +1,6 @@
 {
   "name": "@ramynasr/linear-for-ai",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "exports": "./src/cli.ts",
   "tasks": {
     "dev": "deno run --allow-net --allow-env --allow-read src/cli.ts",
