@@ -9,8 +9,6 @@ import { show as issuesShow } from './commands/issues/show/index.ts';
 import { list as projectsList } from './commands/projects/list/index.ts';
 import { show as projectsShow } from './commands/projects/show/index.ts';
 import { showMyUpdates as projectsShowMyUpdates } from './commands/projects/show-my-updates/index.ts';
-import { list as teamsList } from './commands/teams/list/index.ts';
-import { show as teamsShow } from './commands/teams/show/index.ts';
 import { list as notificationsList } from './commands/notifications/list/index.ts';
 import { HELP_TEXT, VERSION } from './lib/help.ts';
 import type { CommandContext } from './types/cli.ts';
@@ -74,17 +72,6 @@ async function main() {
         output = await projectsShowMyUpdates(client, context, parsed.options);
       } else {
         throw new Error(`Unknown action for projects: ${parsed.action}`);
-      }
-    } else if (parsed.resource === 'teams') {
-      if (parsed.action === 'list') {
-        output = await teamsList(client, context, parsed.options);
-      } else if (parsed.action === 'show') {
-        if (!parsed.args[0]) {
-          throw new Error('Team ID required for show command');
-        }
-        output = await teamsShow(client, context, parsed.args[0], parsed.options);
-      } else {
-        throw new Error(`Unknown action for teams: ${parsed.action}`);
       }
     } else if (parsed.resource === 'notifications') {
       if (parsed.action === 'list') {
