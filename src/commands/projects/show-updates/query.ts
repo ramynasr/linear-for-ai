@@ -1,5 +1,5 @@
 /**
- * Query builder for show-my-updates command
+ * Query builder for show-updates command
  */
 
 export interface BuildQueryOptions {
@@ -10,6 +10,20 @@ export interface BuildQueryOptions {
   idOrUrl?: string;
 }
 
+/**
+ * Builds GraphQL query for show-updates command
+ *
+ * Two modes:
+ * 1. Single project mode (idOrUrl provided): Uses project(id:) query with nested fields
+ * 2. All projects mode (no idOrUrl): Uses projectUpdates + projects queries with filters
+ *
+ * Pagination behavior:
+ * - Single project: limit/cursor are NOT used for projectUpdates (fetches all 250, filters client-side)
+ * - All projects: limit/cursor control the projects query pagination
+ *
+ * Note: projectUpdates nested field doesn't support filter parameters, only orderBy and pagination.
+ * Date filtering for single project mode happens client-side in the handler.
+ */
 export function buildQuery(options: BuildQueryOptions): string {
   const { sinceDate, limit, cursor, showAllIssues, idOrUrl } = options;
 
@@ -22,29 +36,20 @@ export function buildQuery(options: BuildQueryOptions): string {
   }
 }
 
+/**
+ * Builds query for single project mode
+ *
+ * Uses project(id:) with nested projectUpdates. The projectUpdates field
+ * doesn't support filter parameters (only orderBy and pagination), so we
+ * fetch up to 250 updates and filter by date client-side in the handler.
+ *
+ * The project(id:) query accepts UUID, slug, or URL formats natively.
+ */
 function buildSingleProjectQuery(
   idOrUrl: string,
   sinceDate: string,
   showAllIssues: boolean,
 ): string {
-  // Build project updates filter for specific project
-  const projectUpdatesFilter = `{
-    and: [
-      {
-        createdAt: {
-          gte: "${sinceDate}"
-        }
-      },
-      {
-        project: {
-          id: {
-            eq: "${idOrUrl}"
-          }
-        }
-      }
-    ]
-  }`;
-
   // Build issue filter based on showAllIssues flag
   const issueFilter = showAllIssues
     ? `filter: { updatedAt: { gte: "${sinceDate}" } }`
@@ -57,36 +62,6 @@ function buildSingleProjectQuery(
 
   return `
     query {
-      projectUpdates(
-        filter: ${projectUpdatesFilter},
-        orderBy: createdAt,
-        first: 250
-      ) {
-        nodes {
-          id
-          body
-          createdAt
-          url
-          user {
-            id
-            displayName
-          }
-          project {
-            id
-            name
-            url
-            description
-            health
-            targetDate
-            state
-            lead {
-              id
-              displayName
-              email
-            }
-          }
-        }
-      }
       project(id: "${idOrUrl}") {
         id
         name
@@ -99,6 +74,21 @@ function buildSingleProjectQuery(
           id
           displayName
           email
+        }
+        projectUpdates(
+          first: 250,
+          orderBy: createdAt
+        ) {
+          nodes {
+            id
+            body
+            createdAt
+            url
+            user {
+              id
+              displayName
+            }
+          }
         }
         issues(
           ${issueFilter},

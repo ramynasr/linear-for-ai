@@ -51,6 +51,38 @@ interface ProjectWithIssues {
   };
 }
 
+interface ProjectUpdate {
+  id: string;
+  body: string;
+  createdAt: string;
+  url: string;
+  user: {
+    id: string;
+    displayName: string;
+  };
+}
+
+interface SingleProjectResponse {
+  id: string;
+  name: string;
+  url: string;
+  description?: string;
+  health?: string;
+  targetDate?: string;
+  state: string;
+  lead?: {
+    id: string;
+    displayName: string;
+    email: string;
+  };
+  projectUpdates: {
+    nodes: ProjectUpdate[];
+  };
+  issues: {
+    nodes: ProjectWithUpdates['issues']['nodes'];
+  };
+}
+
 interface CombinedResponse {
   projectUpdates: {
     nodes: ProjectUpdateWithProject[];
@@ -62,7 +94,7 @@ interface CombinedResponse {
       endCursor: string | null;
     };
   };
-  project?: ProjectWithIssues;
+  project?: SingleProjectResponse;
 }
 
 export async function showUpdates(
@@ -111,10 +143,10 @@ export async function showUpdates(
       throw new Error(`Project not found: ${idOrUrl}`);
     }
 
-    // Get updates for this project
+    // Get project data and filter updates by date
     const projectData = responseData.project;
-    const updates = responseData.projectUpdates.nodes.filter(
-      (u) => u.project.id === projectData.id,
+    const updates = projectData.projectUpdates.nodes.filter(
+      (u) => u.createdAt >= sinceDate,
     );
 
     const project: ProjectWithUpdates = {
@@ -127,13 +159,7 @@ export async function showUpdates(
       state: projectData.state,
       lead: projectData.lead,
       projectUpdates: {
-        nodes: updates.map((u) => ({
-          id: u.id,
-          body: u.body,
-          createdAt: u.createdAt,
-          url: u.url,
-          user: u.user,
-        })),
+        nodes: updates,
       },
       issues: projectData.issues,
     };
