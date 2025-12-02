@@ -1,4 +1,4 @@
-import { assertStringIncludes } from '@std/assert';
+import { assertEquals, assertStringIncludes } from '@std/assert';
 
 Deno.test('show-updates integration - displays help text', async () => {
   const process = new Deno.Command('deno', {
@@ -16,9 +16,10 @@ Deno.test('show-updates integration - displays help text', async () => {
     stderr: 'piped',
   });
 
-  const { stdout } = await process.output();
+  const { code, stdout } = await process.output();
   const output = new TextDecoder().decode(stdout);
 
+  assertEquals(code, 0);
   // Should show usage with optional argument
   assertStringIncludes(output, 'show-updates');
   assertStringIncludes(output, 'idOrUrl');
