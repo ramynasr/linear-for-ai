@@ -8,7 +8,7 @@ export type FilterObject = Record<string, unknown>;
  * Build a filter to show only resources related to the authenticated user
  */
 export function buildMyResourcesFilter(
-  resource: 'issues' | 'projects',
+  resource: 'issues' | 'projects' | 'initiatives',
 ): FilterObject {
   switch (resource) {
     case 'issues':
@@ -27,6 +27,11 @@ export function buildMyResourcesFilter(
           { creator: { isMe: { eq: true } } },
           { members: { some: { isMe: { eq: true } } } },
         ],
+      };
+
+    case 'initiatives':
+      return {
+        owner: { isMe: { eq: true } },
       };
 
     default:
