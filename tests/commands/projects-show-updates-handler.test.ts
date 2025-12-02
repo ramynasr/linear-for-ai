@@ -330,3 +330,33 @@ Deno.test('showUpdates - passes pagination parameters', async () => {
   assertStringIncludes(client.lastQuery?.query || '', 'first: 25');
   assertStringIncludes(client.lastQuery?.query || '', 'after: "test-cursor"');
 });
+
+Deno.test('showUpdates - throws error with multiple arguments', async () => {
+  const mockResponse = {
+    data: {
+      projectUpdates: { nodes: [] },
+      projects: {
+        nodes: [],
+        pageInfo: { hasNextPage: false, endCursor: null },
+      },
+    },
+  };
+
+  const client = new MockGraphQLClient(mockResponse);
+  const context = {
+    args: ['project1', 'project2'],
+    options: {},
+    config: DEFAULT_CONFIG,
+    env: { apiKey: 'test' },
+  };
+
+  try {
+    await showUpdates(client, context);
+    throw new Error('Expected error to be thrown');
+  } catch (error) {
+    assertStringIncludes(
+      (error as Error).message,
+      'Expected zero or one argument',
+    );
+  }
+});
