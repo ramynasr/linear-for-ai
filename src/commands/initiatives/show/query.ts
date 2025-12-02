@@ -26,13 +26,13 @@ export function buildQuery(identifier: string, fields: string[]): string {
 
   // Add nested resources based on fields
   if (hasOwner || fields.includes('owner')) {
-    fieldsString += '\nowner { id name email }';
+    fieldsString += '\nowner { id displayName email }';
   }
   if (hasCreator || fields.includes('creator')) {
-    fieldsString += '\ncreator { id name email }';
+    fieldsString += '\ncreator { id displayName email }';
   }
   if (hasLastUpdate || fields.includes('lastUpdate')) {
-    fieldsString += '\nlastUpdate { id body createdAt user { name } }';
+    fieldsString += '\nlastUpdate { id body createdAt user { displayName } }';
   }
   if (hasProjects || fields.includes('projects')) {
     fieldsString += `

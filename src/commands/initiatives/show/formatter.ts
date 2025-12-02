@@ -33,11 +33,11 @@ export function formatInitiativeDetail(
 
   // People
   if (initiative.owner) {
-    output += `**Owner:** ${initiative.owner.name} (${initiative.owner.email})\n`;
+    output += `**Owner:** ${initiative.owner.displayName} (${initiative.owner.email})\n`;
   }
 
   if (initiative.creator && initiative.createdAt) {
-    output += `**Created:** ${initiative.createdAt} by ${initiative.creator.name} (${initiative.creator.email})\n`;
+    output += `**Created:** ${initiative.createdAt} by ${initiative.creator.displayName} (${initiative.creator.email})\n`;
   }
 
   output += '\n';
@@ -56,7 +56,7 @@ export function formatInitiativeDetail(
   if (initiative.lastUpdate) {
     const update = initiative.lastUpdate;
     output += `## Last Update\n\n`;
-    output += `Posted by ${update.user.name} on ${update.createdAt}:\n\n`;
+    output += `Posted by ${update.user.displayName} on ${update.createdAt}:\n\n`;
     output += `${update.body}\n\n`;
   }
 
