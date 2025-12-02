@@ -64,7 +64,7 @@ interface CombinedResponse {
   };
 }
 
-export async function showMyUpdates(
+export async function showUpdates(
   client: GraphQLClient,
   context: CommandContext<ShowMyUpdatesOptions>,
 ): Promise<string> {
