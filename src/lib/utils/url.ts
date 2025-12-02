@@ -8,15 +8,20 @@
  * @returns The extracted slugId or the original input
  *
  * Examples:
- * - https://linear.app/workspace/initiative/INI-123 -> INI-123
- * - INI-123 -> INI-123
- * - abc-123-def-456 -> abc-123-def-456
+ * - https://linear.app/workspace/initiative/name-abc123def456 -> abc123def456
+ * - abc123def456 -> abc123def456
+ * - abc-123-def-456 -> abc-123-def-456 (UUID format)
  */
 export function extractInitiativeIdentifier(input: string): string {
-  // URL format: https://linear.app/<workspace>/initiative/<slugId>
-  const urlMatch = input.match(/\/initiative\/([A-Z]+-\d+)/);
+  // URL format: https://linear.app/<workspace>/initiative/<name-slugId>
+  // The slugId is the part after the last dash in the path segment
+  const urlMatch = input.match(/\/initiative\/([^/?#]+)/);
   if (urlMatch) {
-    return urlMatch[1];
+    const fullSlug = urlMatch[1];
+    // Extract the hex ID after the last dash
+    const parts = fullSlug.split('-');
+    const slugId = parts[parts.length - 1];
+    return slugId;
   }
   return input;
 }

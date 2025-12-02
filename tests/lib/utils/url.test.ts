@@ -6,15 +6,15 @@ import {
 } from '../../../src/lib/utils/url.ts';
 
 Deno.test('extractInitiativeIdentifier - extracts slugId from Linear URL', () => {
-  const url = 'https://linear.app/myteam/initiative/INI-123';
+  const url = 'https://linear.app/myteam/initiative/q4-platform-initiative-abc123def456';
   const result = extractInitiativeIdentifier(url);
-  assertEquals(result, 'INI-123');
+  assertEquals(result, 'abc123def456');
 });
 
 Deno.test('extractInitiativeIdentifier - returns slugId as-is when no URL', () => {
-  const slugId = 'INI-456';
+  const slugId = 'abc123def456';
   const result = extractInitiativeIdentifier(slugId);
-  assertEquals(result, 'INI-456');
+  assertEquals(result, 'abc123def456');
 });
 
 Deno.test('extractInitiativeIdentifier - returns UUID as-is when provided', () => {
@@ -24,27 +24,27 @@ Deno.test('extractInitiativeIdentifier - returns UUID as-is when provided', () =
 });
 
 Deno.test('extractInitiativeIdentifier - handles URLs with query parameters', () => {
-  const url = 'https://linear.app/myteam/initiative/INI-789?view=details';
+  const url = 'https://linear.app/myteam/initiative/my-initiative-789abc?view=details';
   const result = extractInitiativeIdentifier(url);
-  assertEquals(result, 'INI-789');
+  assertEquals(result, '789abc');
 });
 
 Deno.test('extractInitiativeIdentifier - handles URLs with hash fragments', () => {
-  const url = 'https://linear.app/myteam/initiative/INI-999#updates';
+  const url = 'https://linear.app/myteam/initiative/test-initiative-999def#updates';
   const result = extractInitiativeIdentifier(url);
-  assertEquals(result, 'INI-999');
+  assertEquals(result, '999def');
 });
 
 Deno.test('extractInitiativeIdentifier - handles URLs with both query and hash', () => {
-  const url = 'https://linear.app/workspace/initiative/INI-001?tab=overview#section';
+  const url = 'https://linear.app/workspace/initiative/big-initiative-001aaa?tab=overview#section';
   const result = extractInitiativeIdentifier(url);
-  assertEquals(result, 'INI-001');
+  assertEquals(result, '001aaa');
 });
 
 Deno.test('extractInitiativeIdentifier - handles different team names', () => {
-  const url = 'https://linear.app/my-cool-team-123/initiative/INIT-555';
+  const url = 'https://linear.app/my-cool-team-123/initiative/another-initiative-555bbb';
   const result = extractInitiativeIdentifier(url);
-  assertEquals(result, 'INIT-555');
+  assertEquals(result, '555bbb');
 });
 
 Deno.test('extractIssueIdentifier - extracts issue key from Linear URL', () => {
