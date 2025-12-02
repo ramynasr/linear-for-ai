@@ -7,10 +7,15 @@ export interface BuildQueryOptions {
   limit: number;
   cursor?: string;
   showAllIssues: boolean;
+  idOrUrl?: string;
 }
 
 export function buildQuery(options: BuildQueryOptions): string {
-  const { sinceDate, limit, cursor, showAllIssues } = options;
+  const { sinceDate, limit, cursor, showAllIssues, idOrUrl } = options;
+
+  // Temporary: idOrUrl will be used in Task 5 to branch query logic
+  // For now, we always use the all-projects query
+  void idOrUrl;
 
   // Build project filter: member but not lead
   const projectFilter = `{

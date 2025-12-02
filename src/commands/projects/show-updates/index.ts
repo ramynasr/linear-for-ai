@@ -73,8 +73,7 @@ export async function showUpdates(
     throw new Error('Expected zero or one argument for show-updates command');
   }
 
-  // Extract idOrUrl for single project mode (to be implemented in subsequent tasks)
-  // @ts-ignore: unused variable - will be used in Task 4
+  // Extract idOrUrl for single project mode
   const idOrUrl = context.args.length === 1 ? context.args[0] : undefined;
   const options = context.options;
   // Calculate since date (14 days ago by default)
@@ -95,6 +94,7 @@ export async function showUpdates(
     limit,
     cursor: options.cursor,
     showAllIssues,
+    idOrUrl,
   });
 
   const response = await client.query<CombinedResponse>({ query });

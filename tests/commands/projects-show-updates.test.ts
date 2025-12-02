@@ -109,3 +109,16 @@ Deno.test('buildQuery - includes project update fields', () => {
   assertStringIncludes(query, 'user {');
   assertStringIncludes(query, 'displayName');
 });
+
+Deno.test('buildQuery - includes idOrUrl parameter', () => {
+  const query = buildQuery({
+    sinceDate: '2025-01-01',
+    limit: 10,
+    showAllIssues: false,
+    idOrUrl: 'project-123',
+  });
+
+  assertStringIncludes(query, 'project-123');
+  // Should query single project, not projects with filters
+  assertStringIncludes(query, 'project(id:');
+});
