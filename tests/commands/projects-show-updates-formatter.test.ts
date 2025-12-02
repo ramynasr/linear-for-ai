@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { formatOutput } from '../../src/commands/projects/show-my-updates/formatter.ts';
+import { formatOutput } from '../../src/commands/projects/show-updates/formatter.ts';
 import type { ProjectWithUpdates } from '../../src/commands/projects/types.ts';
 
 const mockProject: ProjectWithUpdates = {

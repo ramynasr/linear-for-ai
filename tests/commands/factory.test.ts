@@ -21,8 +21,8 @@ Deno.test('CommandFactory.get - returns handler for projects show', () => {
   assertEquals(typeof handler, 'function');
 });
 
-Deno.test('CommandFactory.get - returns handler for projects show-my-updates', () => {
-  const handler = CommandFactory.get('projects', 'show-my-updates');
+Deno.test('CommandFactory.get - returns handler for projects show-updates', () => {
+  const handler = CommandFactory.get('projects', 'show-updates');
   assertEquals(typeof handler, 'function');
 });
 

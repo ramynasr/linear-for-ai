@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { buildQuery } from '../../src/commands/projects/show-my-updates/query.ts';
+import { buildQuery } from '../../src/commands/projects/show-updates/query.ts';
 
 Deno.test('buildQuery - constructs query with default date (14 days ago)', () => {
   const query = buildQuery({
