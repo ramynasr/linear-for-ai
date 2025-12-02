@@ -1,5 +1,4 @@
-import { buildFieldsString } from '../../../lib/utils/query.ts';
-import { toGraphQLSyntax } from '../../../lib/graphql-syntax.ts';
+import { buildFieldsString, buildFilterClause } from '../../../lib/utils/query.ts';
 
 export interface BuildQueryOptions {
   fields: string[];
@@ -20,12 +19,12 @@ export function buildQuery(options: BuildQueryOptions): string {
     paginationArgs.push(`after: "${cursor}"`);
   }
 
-  const filterArg = filter ? `, filter: ${toGraphQLSyntax(filter)}` : '';
+  const filterClause = buildFilterClause(filter);
   const paginationStr = paginationArgs.join(', ');
 
   return `
     query {
-      initiatives(${paginationStr}${filterArg}) {
+      initiatives(${paginationStr}${filterClause}) {
         nodes {
           ${buildFieldsString(fields)}
         }
