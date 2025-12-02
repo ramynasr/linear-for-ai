@@ -15,6 +15,7 @@ COMMON COMMANDS:
   linear-for-ai issues show <id>
   linear-for-ai projects list [--filter <filter>] [--fetch-all]
   linear-for-ai projects show <id>
+  linear-for-ai projects show-updates [<idOrUrl>] [--since <date>]
   linear-for-ai initiatives list [--filter <filter>] [--fetch-all]
   linear-for-ai initiatives show <id|slugId>
   linear-for-ai notifications list [--limit N]
