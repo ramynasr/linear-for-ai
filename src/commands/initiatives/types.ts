@@ -4,7 +4,7 @@
 
 export interface LinearInitiativeOwner {
   id: string;
-  name: string;
+  displayName: string;
   email: string;
 }
 
@@ -13,7 +13,7 @@ export interface LinearInitiativeUpdate {
   body: string;
   createdAt: string;
   user: {
-    name: string;
+    displayName: string;
   };
 }
 
