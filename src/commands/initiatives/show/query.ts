@@ -42,6 +42,7 @@ export function buildQuery(identifier: string, fields: string[]): string {
           name
           status
           url
+          slugId
         }
       }
     `;

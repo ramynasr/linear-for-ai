@@ -22,6 +22,7 @@ export interface LinearInitiativeProject {
   name: string;
   status: string;
   url: string;
+  slugId?: string;
 }
 
 export interface LinearInitiativeSubInitiative {

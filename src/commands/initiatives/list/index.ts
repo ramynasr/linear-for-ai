@@ -34,7 +34,8 @@ export async function list(
   });
 
   if (!response.data) {
-    throw new Error('No data returned from API');
+    const filterDesc = finalFilter ? ` with filter: ${JSON.stringify(finalFilter)}` : '';
+    throw new Error(`No initiatives data returned from API${filterDesc}`);
   }
 
   const format = options.format || context.config.defaults.format;

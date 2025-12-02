@@ -29,7 +29,7 @@ Deno.test('formatInitiativeDetail - formats initiative detail as markdown', () =
   assertStringIncludes(result, '# Q4 Platform Initiative (INI-123)');
   assertStringIncludes(result, '**Status:** Active');
   assertStringIncludes(result, '**Health:** onTrack');
-  assertStringIncludes(result, '**Owner:** John Doe');
+  assertStringIncludes(result, '**Owner:** @John Doe');
   assertStringIncludes(result, '## Description');
   assertStringIncludes(result, 'Platform improvements for Q4');
 });
@@ -120,7 +120,7 @@ Deno.test('formatInitiativeDetail - includes last update when present', () => {
   const result = formatInitiativeDetail(initiativeWithUpdate, 'markdown');
 
   assertStringIncludes(result, '## Last Update');
-  assertStringIncludes(result, 'Posted by John Doe');
+  assertStringIncludes(result, 'Posted by @John Doe');
   assertStringIncludes(result, 'Everything is on track');
 });
 

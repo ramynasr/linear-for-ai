@@ -157,8 +157,8 @@ linear-for-ai initiatives list --fetch-all  # Show all initiatives
 Show initiative details:
 
 ```bash
-linear-for-ai initiatives show INI-123
-linear-for-ai initiatives show https://linear.app/workspace/initiative/INI-123
+linear-for-ai initiatives show abc123def456
+linear-for-ai initiatives show https://linear.app/workspace/initiative/q4-platform-abc123def456
 ```
 
 Options:
@@ -180,7 +180,7 @@ linear-for-ai issues show ENG-123 --format json
 linear-for-ai initiatives list
 
 # Show initiative with nested resources
-linear-for-ai initiatives show INI-123
+linear-for-ai initiatives show abc123def456
 
 # Debug mode to see API calls
 linear-for-ai issues list --debug

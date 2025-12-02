@@ -59,21 +59,17 @@ function getFieldTitle(field: string): string {
  * Handles both simple fields and nested fields with dot notation (e.g., "owner.displayName")
  */
 function formatFieldValue(initiative: LinearInitiative, field: string): string {
-  // Handle nested fields with dot notation
+  // Handle nested fields with dot notation (supports arbitrary depth)
   if (field.includes('.')) {
-    const [parent, child] = field.split('.');
-    const parentValue = initiative[parent as keyof LinearInitiative];
+    const path = field.split('.');
+    const value = path.reduce((obj: any, key: string) => {
+      return (obj && obj[key] !== undefined) ? obj[key] : undefined;
+    }, initiative);
 
-    if (parentValue === null || parentValue === undefined) {
+    if (value === null || value === undefined) {
       return 'N/A';
     }
-
-    if (typeof parentValue === 'object' && parentValue !== null) {
-      const childValue = (parentValue as any)[child];
-      return childValue !== null && childValue !== undefined ? String(childValue) : 'N/A';
-    }
-
-    return 'N/A';
+    return String(value);
   }
 
   // Handle simple fields
