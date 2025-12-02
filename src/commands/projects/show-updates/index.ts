@@ -55,13 +55,14 @@ interface CombinedResponse {
   projectUpdates: {
     nodes: ProjectUpdateWithProject[];
   };
-  projects: {
+  projects?: {
     nodes: ProjectWithIssues[];
     pageInfo: {
       hasNextPage: boolean;
       endCursor: string | null;
     };
   };
+  project?: ProjectWithIssues;
 }
 
 export async function showUpdates(
@@ -103,6 +104,44 @@ export async function showUpdates(
     throw new Error('No data returned from API');
   }
 
+  // Handle single project mode
+  if (idOrUrl) {
+    const responseData = response.data;
+    if (!responseData.project) {
+      throw new Error(`Project not found: ${idOrUrl}`);
+    }
+
+    // Get updates for this project
+    const projectData = responseData.project;
+    const updates = responseData.projectUpdates.nodes.filter(
+      (u) => u.project.id === projectData.id,
+    );
+
+    const project: ProjectWithUpdates = {
+      id: projectData.id,
+      name: projectData.name,
+      url: projectData.url,
+      description: projectData.description,
+      health: projectData.health,
+      targetDate: projectData.targetDate,
+      state: projectData.state,
+      lead: projectData.lead,
+      projectUpdates: {
+        nodes: updates.map((u) => ({
+          id: u.id,
+          body: u.body,
+          createdAt: u.createdAt,
+          url: u.url,
+          user: u.user,
+        })),
+      },
+      issues: projectData.issues,
+    };
+
+    const format = options.format || 'markdown';
+    return formatOutput([project], sinceDate, format);
+  }
+
   // Group project updates by project ID
   const updatesByProject = new Map<string, ProjectUpdateWithProject[]>();
   for (const update of response.data.projectUpdates.nodes) {
@@ -115,8 +154,10 @@ export async function showUpdates(
 
   // Create a map of projects from the projects query (for issues)
   const projectsMap = new Map<string, ProjectWithIssues>();
-  for (const project of response.data.projects.nodes) {
-    projectsMap.set(project.id, project);
+  if (response.data.projects) {
+    for (const project of response.data.projects.nodes) {
+      projectsMap.set(project.id, project);
+    }
   }
 
   // Merge data: get unique project IDs from both queries

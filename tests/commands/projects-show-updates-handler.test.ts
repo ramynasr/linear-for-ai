@@ -360,3 +360,48 @@ Deno.test('showUpdates - throws error with multiple arguments', async () => {
     );
   }
 });
+
+Deno.test('showUpdates - handles single project with idOrUrl', async () => {
+  const mockData = {
+    data: {
+      projectUpdates: {
+        nodes: [
+          {
+            id: 'update1',
+            body: 'Weekly update',
+            createdAt: '2025-01-15T10:00:00Z',
+            url: 'https://linear.app/team/update1',
+            user: { id: 'user1', displayName: 'John Doe' },
+            project: {
+              id: 'project1',
+              name: 'Test Project',
+              url: 'https://linear.app/team/project/test',
+              state: 'started',
+            },
+          },
+        ],
+      },
+      project: {
+        id: 'project1',
+        name: 'Test Project',
+        url: 'https://linear.app/team/project/test',
+        state: 'started',
+        issues: {
+          nodes: [],
+        },
+      },
+    },
+  };
+
+  const client = new MockGraphQLClient(mockData);
+  const context = {
+    args: ['project1'],
+    options: {},
+    config: DEFAULT_CONFIG,
+    env: { apiKey: 'test' },
+  };
+
+  const result = await showUpdates(client, context);
+  assertStringIncludes(result, 'Test Project');
+  assertStringIncludes(result, 'Weekly update');
+});
