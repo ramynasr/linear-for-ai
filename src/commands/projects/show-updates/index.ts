@@ -1,5 +1,5 @@
 /**
- * Command handler for show-my-updates
+ * Command handler for show-updates
  */
 
 import type { GraphQLClient } from '../../../lib/graphql-client.ts';
