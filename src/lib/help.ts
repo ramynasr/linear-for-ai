@@ -7,6 +7,7 @@ USAGE:
 RESOURCES:
   issues          Manage and query issues
   projects        Manage and query projects
+  initiatives     Manage and query initiatives
   notifications   Query user notifications
 
 COMMON COMMANDS:
@@ -14,6 +15,8 @@ COMMON COMMANDS:
   linear-for-ai issues show <id>
   linear-for-ai projects list [--filter <filter>] [--fetch-all]
   linear-for-ai projects show <id>
+  linear-for-ai initiatives list [--filter <filter>] [--fetch-all]
+  linear-for-ai initiatives show <id|slugId>
   linear-for-ai notifications list [--limit N]
 
 GLOBAL OPTIONS:
@@ -29,11 +32,12 @@ GLOBAL OPTIONS:
   -v, --version            Show version information
 
 FILTERING BEHAVIOR:
-  By default, issues and projects list commands show only resources related to you.
-  Use --fetch-all to see all resources in your workspace.
+  By default, issues, projects, and initiatives list commands show only resources
+  related to you. Use --fetch-all to see all resources in your workspace.
 
   - Issues: Shows issues assigned to you, created by you, or subscribed to
   - Projects: Shows projects where you're the lead, creator, or a member
+  - Initiatives: Shows initiatives owned by you
 
 EXAMPLES:
   # List your issues in progress
@@ -50,6 +54,12 @@ EXAMPLES:
 
   # List ALL projects (workspace-wide)
   linear-for-ai projects list --fetch-all
+
+  # List your initiatives
+  linear-for-ai initiatives list
+
+  # Show initiative detail
+  linear-for-ai initiatives show abc123def456
 
   # List recent notifications
   linear-for-ai notifications list --limit 10
