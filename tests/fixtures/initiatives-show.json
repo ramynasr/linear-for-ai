@@ -1,0 +1,55 @@
+{
+  "data": {
+    "initiative": {
+      "id": "init-1",
+      "name": "Q4 Platform Initiative",
+      "slugId": "abc123def456",
+      "status": "planned",
+      "health": "onTrack",
+      "url": "https://linear.app/team/initiative/q4-platform-abc123def456",
+      "description": "Major platform improvements for Q4",
+      "content": "Detailed initiative content here",
+      "createdAt": "2025-01-01T10:00:00Z",
+      "owner": {
+        "id": "user-1",
+        "displayName": "John Doe",
+        "email": "john@example.com"
+      },
+      "creator": {
+        "id": "user-1",
+        "displayName": "John Doe",
+        "email": "john@example.com"
+      },
+      "lastUpdate": {
+        "id": "update-1",
+        "body": "Everything is on track",
+        "createdAt": "2025-01-15T14:00:00Z",
+        "user": {
+          "id": "user-1",
+          "displayName": "John Doe"
+        }
+      },
+      "projects": {
+        "nodes": [
+          {
+            "id": "proj-1",
+            "name": "API Refactor",
+            "status": "started",
+            "url": "https://linear.app/team/project/api-refactor"
+          }
+        ]
+      },
+      "subInitiatives": {
+        "nodes": [
+          {
+            "id": "init-2",
+            "name": "Database Migration",
+            "slugId": "xyz789abc123",
+            "status": "planned",
+            "health": "onTrack"
+          }
+        ]
+      }
+    }
+  }
+}

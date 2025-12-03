@@ -144,6 +144,29 @@ Structured output for programs:
 }
 ```
 
+### Initiatives
+
+List initiatives (default: owned by you):
+
+```bash
+linear-for-ai initiatives list
+linear-for-ai initiatives list --filter 'status:active'
+linear-for-ai initiatives list --fetch-all  # Show all initiatives
+```
+
+Show initiative details:
+
+```bash
+linear-for-ai initiatives show abc123def456
+linear-for-ai initiatives show https://linear.app/workspace/initiative/q4-platform-abc123def456
+```
+
+Options:
+- `--filter <string>` - Filter initiatives (e.g., `status:active`, `health:atRisk`)
+- `--fetch-all` - Show all initiatives (not just owned by you)
+- `--fields <fields>` - Custom field selection
+- `--format <format>` - Output format: `markdown` or `json`
+
 ### Examples
 
 ```bash
@@ -152,6 +175,12 @@ linear-for-ai issues list --fields id,title,assignee.displayName,url
 
 # Show issue with all details in JSON
 linear-for-ai issues show ENG-123 --format json
+
+# List your initiatives
+linear-for-ai initiatives list
+
+# Show initiative with nested resources
+linear-for-ai initiatives show abc123def456
 
 # Debug mode to see API calls
 linear-for-ai issues list --debug

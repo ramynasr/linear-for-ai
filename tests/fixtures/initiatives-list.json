@@ -1,0 +1,28 @@
+{
+  "data": {
+    "initiatives": {
+      "nodes": [
+        {
+          "id": "init-1",
+          "name": "Q4 Platform Initiative",
+          "slugId": "abc123def456",
+          "status": "planned",
+          "health": "onTrack",
+          "url": "https://linear.app/team/initiative/q4-platform-abc123def456",
+          "createdAt": "2025-01-01T10:00:00Z",
+          "owner": {
+            "id": "user-1",
+            "displayName": "John Doe",
+            "email": "john@example.com"
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "hasPreviousPage": false,
+        "startCursor": null,
+        "endCursor": null
+      }
+    }
+  }
+}
