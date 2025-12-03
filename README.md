@@ -303,12 +303,6 @@ deno task compile
 
 Code style: TypeScript strict mode, 100 char lines, single quotes, 2 spaces, descriptive names
 
-## Roadmap
-
-**Current (v0.3.0):** Issues list/show, projects show/list/show-updates, markdown/JSON output, config support, standalone executable
-
-**Planned:** Teams, cycles, write operations, filtering, caching
-
 ## License
 
 MIT
