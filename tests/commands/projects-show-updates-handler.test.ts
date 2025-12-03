@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { showMyUpdates } from '../../src/commands/projects/show-my-updates/index.ts';
+import { showUpdates } from '../../src/commands/projects/show-updates/index.ts';
 import { GraphQLClient } from '../../src/lib/graphql-client.ts';
 import { DEFAULT_CONFIG } from '../../src/types/config.ts';
 
@@ -19,7 +19,7 @@ class MockGraphQLClient extends GraphQLClient {
   }
 }
 
-Deno.test('showMyUpdates - calculates default since date (14 days ago)', async () => {
+Deno.test('showUpdates - calculates default since date (14 days ago)', async () => {
   const mockResponse = {
     data: {
       projectUpdates: { nodes: [] },
@@ -31,7 +31,7 @@ Deno.test('showMyUpdates - calculates default since date (14 days ago)', async (
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  await showMyUpdates(
+  await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -52,7 +52,7 @@ Deno.test('showMyUpdates - calculates default since date (14 days ago)', async (
   );
 });
 
-Deno.test('showMyUpdates - uses provided since date', async () => {
+Deno.test('showUpdates - uses provided since date', async () => {
   const mockResponse = {
     data: {
       projectUpdates: { nodes: [] },
@@ -64,7 +64,7 @@ Deno.test('showMyUpdates - uses provided since date', async () => {
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  await showMyUpdates(
+  await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -77,7 +77,7 @@ Deno.test('showMyUpdates - uses provided since date', async () => {
   assertStringIncludes(client.lastQuery?.query || '', 'gte: "2025-01-15"');
 });
 
-Deno.test('showMyUpdates - filters out empty projects', async () => {
+Deno.test('showUpdates - filters out empty projects', async () => {
   const mockResponse = {
     data: {
       projectUpdates: {
@@ -133,7 +133,7 @@ Deno.test('showMyUpdates - filters out empty projects', async () => {
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  const result = await showMyUpdates(
+  const result = await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -154,7 +154,7 @@ Deno.test('showMyUpdates - filters out empty projects', async () => {
   assertStringIncludes(result, '2 projects');
 });
 
-Deno.test('showMyUpdates - returns formatted markdown', async () => {
+Deno.test('showUpdates - returns formatted markdown', async () => {
   const mockResponse = {
     data: {
       projectUpdates: {
@@ -212,7 +212,7 @@ Deno.test('showMyUpdates - returns formatted markdown', async () => {
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  const result = await showMyUpdates(
+  const result = await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -228,7 +228,7 @@ Deno.test('showMyUpdates - returns formatted markdown', async () => {
   assertStringIncludes(result, 'Great progress');
 });
 
-Deno.test('showMyUpdates - returns JSON format', async () => {
+Deno.test('showUpdates - returns JSON format', async () => {
   const mockResponse = {
     data: {
       projectUpdates: {
@@ -262,7 +262,7 @@ Deno.test('showMyUpdates - returns JSON format', async () => {
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  const result = await showMyUpdates(
+  const result = await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -277,7 +277,7 @@ Deno.test('showMyUpdates - returns JSON format', async () => {
   assertEquals(parsed.projects[0].name, 'Q1 Goals');
 });
 
-Deno.test('showMyUpdates - passes showAllIssueUpdates to query', async () => {
+Deno.test('showUpdates - passes showAllIssueUpdates to query', async () => {
   const mockResponse = {
     data: {
       projectUpdates: { nodes: [] },
@@ -289,7 +289,7 @@ Deno.test('showMyUpdates - passes showAllIssueUpdates to query', async () => {
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  await showMyUpdates(
+  await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -305,7 +305,7 @@ Deno.test('showMyUpdates - passes showAllIssueUpdates to query', async () => {
   assertEquals(query.includes('completedAt'), false);
 });
 
-Deno.test('showMyUpdates - passes pagination parameters', async () => {
+Deno.test('showUpdates - passes pagination parameters', async () => {
   const mockResponse = {
     data: {
       projectUpdates: { nodes: [] },
@@ -317,7 +317,7 @@ Deno.test('showMyUpdates - passes pagination parameters', async () => {
   };
 
   const client = new MockGraphQLClient(mockResponse);
-  await showMyUpdates(
+  await showUpdates(
     client,
     {
       config: DEFAULT_CONFIG,
@@ -329,4 +329,73 @@ Deno.test('showMyUpdates - passes pagination parameters', async () => {
 
   assertStringIncludes(client.lastQuery?.query || '', 'first: 25');
   assertStringIncludes(client.lastQuery?.query || '', 'after: "test-cursor"');
+});
+
+Deno.test('showUpdates - throws error with multiple arguments', async () => {
+  const mockResponse = {
+    data: {
+      projectUpdates: { nodes: [] },
+      projects: {
+        nodes: [],
+        pageInfo: { hasNextPage: false, endCursor: null },
+      },
+    },
+  };
+
+  const client = new MockGraphQLClient(mockResponse);
+  const context = {
+    args: ['project1', 'project2'],
+    options: {},
+    config: DEFAULT_CONFIG,
+    env: { apiKey: 'test' },
+  };
+
+  try {
+    await showUpdates(client, context);
+    throw new Error('Expected error to be thrown');
+  } catch (error) {
+    assertStringIncludes(
+      (error as Error).message,
+      'Expected zero or one argument',
+    );
+  }
+});
+
+Deno.test('showUpdates - handles single project with idOrUrl', async () => {
+  const mockData = {
+    data: {
+      project: {
+        id: 'project1',
+        name: 'Test Project',
+        url: 'https://linear.app/team/project/test',
+        state: 'started',
+        projectUpdates: {
+          nodes: [
+            {
+              id: 'update1',
+              body: 'Weekly update',
+              createdAt: '2025-01-15T10:00:00Z',
+              url: 'https://linear.app/team/update1',
+              user: { id: 'user1', displayName: 'John Doe' },
+            },
+          ],
+        },
+        issues: {
+          nodes: [],
+        },
+      },
+    },
+  };
+
+  const client = new MockGraphQLClient(mockData);
+  const context = {
+    args: ['project1'],
+    options: { since: '2025-01-01' },
+    config: DEFAULT_CONFIG,
+    env: { apiKey: 'test' },
+  };
+
+  const result = await showUpdates(client, context);
+  assertStringIncludes(result, 'Test Project');
+  assertStringIncludes(result, 'Weekly update');
 });

@@ -1,5 +1,5 @@
 /**
- * Command handler for show-my-updates
+ * Command handler for show-updates
  */
 
 import type { GraphQLClient } from '../../../lib/graphql-client.ts';
@@ -51,23 +51,63 @@ interface ProjectWithIssues {
   };
 }
 
+interface ProjectUpdate {
+  id: string;
+  body: string;
+  createdAt: string;
+  url: string;
+  user: {
+    id: string;
+    displayName: string;
+  };
+}
+
+interface SingleProjectResponse {
+  id: string;
+  name: string;
+  url: string;
+  description?: string;
+  health?: string;
+  targetDate?: string;
+  state: string;
+  lead?: {
+    id: string;
+    displayName: string;
+    email: string;
+  };
+  projectUpdates: {
+    nodes: ProjectUpdate[];
+  };
+  issues: {
+    nodes: ProjectWithUpdates['issues']['nodes'];
+  };
+}
+
 interface CombinedResponse {
   projectUpdates: {
     nodes: ProjectUpdateWithProject[];
   };
-  projects: {
+  projects?: {
     nodes: ProjectWithIssues[];
     pageInfo: {
       hasNextPage: boolean;
       endCursor: string | null;
     };
   };
+  project?: SingleProjectResponse;
 }
 
-export async function showMyUpdates(
+export async function showUpdates(
   client: GraphQLClient,
   context: CommandContext<ShowMyUpdatesOptions>,
 ): Promise<string> {
+  // Validate arguments
+  if (context.args.length > 1) {
+    throw new Error('Expected zero or one argument for show-updates command');
+  }
+
+  // Extract idOrUrl for single project mode
+  const idOrUrl = context.args.length === 1 ? context.args[0] : undefined;
   const options = context.options;
   // Calculate since date (14 days ago by default)
   const sinceDate = options.since || calculateDefaultSinceDate();
@@ -87,12 +127,45 @@ export async function showMyUpdates(
     limit,
     cursor: options.cursor,
     showAllIssues,
+    idOrUrl,
   });
 
   const response = await client.query<CombinedResponse>({ query });
 
   if (!response.data) {
     throw new Error('No data returned from API');
+  }
+
+  // Handle single project mode
+  if (idOrUrl) {
+    const responseData = response.data;
+    if (!responseData.project) {
+      throw new Error(`Project not found: ${idOrUrl}`);
+    }
+
+    // Get project data and filter updates by date
+    const projectData = responseData.project;
+    const updates = projectData.projectUpdates.nodes.filter(
+      (u) => u.createdAt >= sinceDate,
+    );
+
+    const project: ProjectWithUpdates = {
+      id: projectData.id,
+      name: projectData.name,
+      url: projectData.url,
+      description: projectData.description,
+      health: projectData.health,
+      targetDate: projectData.targetDate,
+      state: projectData.state,
+      lead: projectData.lead,
+      projectUpdates: {
+        nodes: updates,
+      },
+      issues: projectData.issues,
+    };
+
+    const format = options.format || 'markdown';
+    return formatOutput([project], sinceDate, format);
   }
 
   // Group project updates by project ID
@@ -107,8 +180,10 @@ export async function showMyUpdates(
 
   // Create a map of projects from the projects query (for issues)
   const projectsMap = new Map<string, ProjectWithIssues>();
-  for (const project of response.data.projects.nodes) {
-    projectsMap.set(project.id, project);
+  if (response.data.projects) {
+    for (const project of response.data.projects.nodes) {
+      projectsMap.set(project.id, project);
+    }
   }
 
   // Merge data: get unique project IDs from both queries

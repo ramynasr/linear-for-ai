@@ -182,6 +182,13 @@ linear-for-ai initiatives list
 # Show initiative with nested resources
 linear-for-ai initiatives show abc123def456
 
+# Show updates for all your member projects
+linear-for-ai projects show-updates --since 2025-01-01
+
+# Show updates for a specific project
+linear-for-ai projects show-updates PROJECT-ID --since 2025-01-01
+linear-for-ai projects show-updates https://linear.app/team/project/xyz --since 2025-01-01
+
 # Debug mode to see API calls
 linear-for-ai issues list --debug
 ```
@@ -295,12 +302,6 @@ deno task compile
 5. Create Pull Request
 
 Code style: TypeScript strict mode, 100 char lines, single quotes, 2 spaces, descriptive names
-
-## Roadmap
-
-**Current (v0.1.0):** Issues list/show, markdown/JSON output, config support, standalone executable
-
-**Planned:** Projects, teams, cycles, write operations, filtering, caching
 
 ## License
 

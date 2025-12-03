@@ -4,7 +4,7 @@ import { list as issuesList } from './issues/list/index.ts';
 import { show as issuesShow } from './issues/show/index.ts';
 import { list as projectsList } from './projects/list/index.ts';
 import { show as projectsShow } from './projects/show/index.ts';
-import { showMyUpdates as projectsShowMyUpdates } from './projects/show-my-updates/index.ts';
+import { showUpdates as projectsShowUpdates } from './projects/show-updates/index.ts';
 import { list as notificationsList } from './notifications/list/index.ts';
 import { list as initiativesList } from './initiatives/list/index.ts';
 import { show as initiativesShow } from './initiatives/show/index.ts';
@@ -22,7 +22,7 @@ const commandMap: Record<string, Record<string, CommandHandler>> = {
   projects: {
     list: projectsList,
     show: projectsShow,
-    'show-my-updates': projectsShowMyUpdates,
+    'show-updates': projectsShowUpdates,
   },
   notifications: {
     list: notificationsList,
