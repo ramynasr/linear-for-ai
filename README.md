@@ -77,35 +77,92 @@ See `config.example.json` for all options. Full docs: [docs/configuration.md](do
 
 ### Commands
 
+#### Issues
+
 ```bash
-# List all issues
+# List your issues (assigned, created, or subscribed)
 linear-for-ai issues list
 
-# List with pagination limit
-linear-for-ai issues list --limit 25
+# List all issues in workspace
+linear-for-ai issues list --fetch-all
+
+# List with filter
+linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
 
 # Show specific issue
 linear-for-ai issues show ENG-123
+linear-for-ai issues show https://linear.app/team/issue/ENG-123
+```
 
-# Output as JSON
-linear-for-ai issues list --format json
+#### Projects
 
-# Custom field selection
-linear-for-ai issues list --fields id,title,url
+```bash
+# List your projects (excludes completed by default)
+linear-for-ai projects list
+
+# Include completed projects
+linear-for-ai projects list --show-completed
+
+# List all projects in workspace
+linear-for-ai projects list --fetch-all
+
+# Show project details
+linear-for-ai projects show PROJECT-ID
+linear-for-ai projects show https://linear.app/team/project/my-project
+
+# Show project updates (issues and project updates since date)
+linear-for-ai projects show-updates --since 2025-01-01
+linear-for-ai projects show-updates PROJECT-ID --since 2025-01-01
+```
+
+#### Initiatives
+
+```bash
+# List your initiatives
+linear-for-ai initiatives list
+
+# List all initiatives
+linear-for-ai initiatives list --fetch-all
+
+# Show initiative details
+linear-for-ai initiatives show abc123def456
+linear-for-ai initiatives show https://linear.app/workspace/initiative/q4-platform-abc123def456
+```
+
+#### Notifications
+
+```bash
+# List recent notifications
+linear-for-ai notifications list
+
+# Limit results
+linear-for-ai notifications list --limit 10
 ```
 
 ### Global Options
 
 ```bash
 --format <markdown|json>  # Output format (default: markdown)
+--fetch-all               # Show all resources (default: only related to you)
+--filter <json>           # Filter results using Linear's filter syntax
+--fields <fields>         # Override default field selection
+--limit <N>               # Pagination limit (default: 50)
 --debug                   # Show debug information including API calls
 --config <path>           # Custom config file path
 --no-color                # Disable ANSI colors
---fields <fields>         # Override default field selection
---limit <N>               # Pagination limit
--h, --help               # Show help message
--v, --version            # Show version
+-h, --help                # Show help message
+-v, --version             # Show version
 ```
+
+### Filtering Behavior
+
+By default, list commands show only resources related to you:
+
+- **Issues**: Assigned to you, created by you, or subscribed to
+- **Projects**: Where you're the lead, creator, or a member (excludes completed)
+- **Initiatives**: Owned by you
+
+Use `--fetch-all` to see all resources in your workspace.
 
 ### Output Formats
 
@@ -144,50 +201,20 @@ Structured output for programs:
 }
 ```
 
-### Initiatives
-
-List initiatives (default: owned by you):
-
-```bash
-linear-for-ai initiatives list
-linear-for-ai initiatives list --filter 'status:active'
-linear-for-ai initiatives list --fetch-all  # Show all initiatives
-```
-
-Show initiative details:
-
-```bash
-linear-for-ai initiatives show abc123def456
-linear-for-ai initiatives show https://linear.app/workspace/initiative/q4-platform-abc123def456
-```
-
-Options:
-- `--filter <string>` - Filter initiatives (e.g., `status:active`, `health:atRisk`)
-- `--fetch-all` - Show all initiatives (not just owned by you)
-- `--fields <fields>` - Custom field selection
-- `--format <format>` - Output format: `markdown` or `json`
-
 ### Examples
 
 ```bash
-# List issues with custom fields
+# Custom field selection
 linear-for-ai issues list --fields id,title,assignee.displayName,url
 
-# Show issue with all details in JSON
+# JSON output
 linear-for-ai issues show ENG-123 --format json
 
-# List your initiatives
-linear-for-ai initiatives list
+# Filter issues by state
+linear-for-ai issues list --filter '{"state":{"name":{"eq":"In Progress"}}}'
 
-# Show initiative with nested resources
-linear-for-ai initiatives show abc123def456
-
-# Show updates for all your member projects
+# Show project updates from the last 2 weeks
 linear-for-ai projects show-updates --since 2025-01-01
-
-# Show updates for a specific project
-linear-for-ai projects show-updates PROJECT-ID --since 2025-01-01
-linear-for-ai projects show-updates https://linear.app/team/project/xyz --since 2025-01-01
 
 # Debug mode to see API calls
 linear-for-ai issues list --debug
