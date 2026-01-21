@@ -24,22 +24,27 @@ export async function readFromKeychain(
     return null;
   }
 
-  const cmd = new Deno.Command('security', {
-    args: ['find-generic-password', '-s', service, '-a', account, '-w'],
-    stdout: 'piped',
-    stderr: 'piped',
-  });
+  try {
+    const cmd = new Deno.Command('security', {
+      args: ['find-generic-password', '-s', service, '-a', account, '-w'],
+      stdout: 'piped',
+      stderr: 'piped',
+    });
 
-  const { code, stdout } = await cmd.output();
+    const { code, stdout } = await cmd.output();
 
-  // Exit code 44 = errSecItemNotFound (key doesn't exist)
-  // Any other non-zero = error
-  if (code !== 0) {
+    // Exit code 44 = errSecItemNotFound (key doesn't exist)
+    // Any other non-zero = error
+    if (code !== 0) {
+      return null;
+    }
+
+    const password = new TextDecoder().decode(stdout).trim();
+    return password || null;
+  } catch {
+    // Handle spawn failures (e.g., security command not in PATH)
     return null;
   }
-
-  const password = new TextDecoder().decode(stdout).trim();
-  return password || null;
 }
 
 /**
