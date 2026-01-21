@@ -1,13 +1,51 @@
 # Configuration Guide
 
-## Environment Variables
+## API Key Setup
 
-Create a `.env` file in your project root or set environment variables:
+linear-for-ai requires a Linear API key. The key is loaded in this order:
+
+1. `LINEAR_API_KEY` environment variable
+2. `.env` file in current directory
+3. macOS Keychain (macOS only)
+
+If no key is found and you're running in an interactive terminal, you'll be prompted to set one up.
+
+### Option 1: Environment Variable
+
+Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
-# Required
-LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+export LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
 
+### Option 2: .env File
+
+Create a `.env` file in your project root:
+
+```bash
+LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+**Note:** This only works when running linear-for-ai from that directory.
+
+### Option 3: macOS Keychain (Recommended for macOS)
+
+On first run without a configured key, you'll be prompted to store it in Keychain.
+
+To manually add via command line:
+
+```bash
+security add-generic-password -s "linear-for-ai" -a "api-key" -w "lin_api_xxx" -U
+```
+
+Benefits:
+- Secure storage (encrypted by macOS)
+- Works system-wide from any directory
+- No plain text files to accidentally commit
+
+## Other Environment Variables
+
+```bash
 # Optional
 LINEAR_CONFIG=/custom/path/to/config.json
 HTTPS_PROXY=http://proxy.example.com:8080
