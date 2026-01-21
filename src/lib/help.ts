@@ -13,7 +13,7 @@ RESOURCES:
 COMMON COMMANDS:
   linear-for-ai issues list [--filter <filter>] [--limit N] [--fetch-all]
   linear-for-ai issues show <id>
-  linear-for-ai projects list [--filter <filter>] [--fetch-all]
+  linear-for-ai projects list [--filter <filter>] [--fetch-all] [--show-completed]
   linear-for-ai projects show <id>
   linear-for-ai projects show-updates [<idOrUrl>] [--since <date>]
   linear-for-ai initiatives list [--filter <filter>] [--fetch-all]
@@ -38,6 +38,7 @@ FILTERING BEHAVIOR:
 
   - Issues: Shows issues assigned to you, created by you, or subscribed to
   - Projects: Shows projects where you're the lead, creator, or a member
+              Excludes completed projects by default (use --show-completed to include)
   - Initiatives: Shows initiatives owned by you
 
 EXAMPLES:
@@ -55,6 +56,9 @@ EXAMPLES:
 
   # List ALL projects (workspace-wide)
   linear-for-ai projects list --fetch-all
+
+  # List your projects including completed ones
+  linear-for-ai projects list --show-completed
 
   # List your initiatives
   linear-for-ai initiatives list

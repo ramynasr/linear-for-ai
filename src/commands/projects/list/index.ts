@@ -18,10 +18,18 @@ export async function list(
   const limit = options.limit || context.config.defaults.limit;
   const userFilter = parseFilter(options.filter);
 
+  // Exclude completed projects by default unless --show-completed is provided
+  const statusFilter = options.showCompleted
+    ? {}
+    : { status: { name: { neqIgnoreCase: 'completed' } } };
+
   // Apply default "my resources" filter unless --fetch-all is provided
-  const finalFilter = options.fetchAll
-    ? userFilter
+  const baseFilter = options.fetchAll
+    ? (userFilter || {})
     : mergeFilters(buildMyResourcesFilter('projects'), userFilter);
+
+  // Merge status filter with base filter
+  const finalFilter = mergeFilters(baseFilter, statusFilter);
 
   const query = buildQuery({ fields, limit, cursor: options.cursor, filter: finalFilter });
 

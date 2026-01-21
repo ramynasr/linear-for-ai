@@ -17,6 +17,7 @@ export interface ListOptions extends GlobalOptions {
   limit?: number;
   cursor?: string;
   fetchAll?: boolean;
+  showCompleted?: boolean;
 }
 
 export interface ShowOptions extends GlobalOptions {

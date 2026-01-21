@@ -24,6 +24,7 @@ export function parseArgs(args: string[]): ParsedCommand {
       'allow-writes',
       'fetch-all',
       'show-all-issue-updates',
+      'show-completed',
     ],
     string: ['format', 'config', 'filter', 'fields', 'cursor', 'limit', 'since'],
     alias: {
@@ -60,6 +61,7 @@ export function parseArgs(args: string[]): ParsedCommand {
       fetchAll: parsed['fetch-all'],
       since: parsed.since,
       showAllIssueUpdates: parsed['show-all-issue-updates'],
+      showCompleted: parsed['show-completed'],
     },
     showHelp: parsed.help || (!resource && !parsed.version),
     showVersion: parsed.version,

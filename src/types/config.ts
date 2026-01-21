@@ -55,7 +55,7 @@ export const DEFAULT_CONFIG: Config = {
     fields: {
       issues: ['identifier', 'title', 'state.name', 'assignee.name', 'url'],
       projects: ['id', 'name', 'progress', 'startDate', 'targetDate', 'url'],
-      'projects list': ['id', 'name', 'url'],
+      'projects list': ['id', 'name', 'status.name', 'url'],
       teams: ['id', 'key', 'name', 'url'],
       cycles: ['id', 'number', 'name', 'startsAt', 'endsAt', 'url'],
       notifications: ['title', 'subtitle', 'url', 'createdAt'],
