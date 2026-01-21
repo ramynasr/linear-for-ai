@@ -393,7 +393,7 @@ type AgentActivityWebhookPayload {
   """
   The ID of the user who created this agent activity.
   """
-  userId: String
+  userId: String!
 }
 
 """
@@ -446,6 +446,10 @@ type AgentSession implements Node {
   """
   comment: Comment
   """
+  Serialized JSON representing the contexts this session is related to, for direct chat sessions.
+  """
+  context: JSON!
+  """
   The time at which the entity was created.
   """
   createdAt: DateTime!
@@ -468,7 +472,11 @@ type AgentSession implements Node {
   """
   The URL of an external agent-hosted page associated with this session.
   """
-  externalLink: String
+  externalLink: String @deprecated(reason: "Use externalUrls instead.")
+  """
+  URLs of external resources associated with this session.
+  """
+  externalUrls: JSON!
   """
   The unique identifier of the entity.
   """
@@ -481,6 +489,39 @@ type AgentSession implements Node {
   A dynamically updated list of the agent's execution strategy.
   """
   plan: JSON
+  """
+  [Internal] A formatted prompt string containing relevant context for the agent session, including issue details, comments, and guidance.
+  """
+  promptContext: String
+  """
+  [Internal] Pull requests associated with this agent session.
+  """
+  pullRequests(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): AgentSessionToPullRequestConnection!
   """
   The comment that this agent session was spawned from, if from a different thread.
   """
@@ -502,14 +543,18 @@ type AgentSession implements Node {
   """
   summary: String
   """
-  The type of the agent session.
+  [DEPRECATED] The type of the agent session.
   """
-  type: AgentSessionType!
+  type: AgentSessionType @deprecated(reason: "This field is slated for removal.")
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
   """
   updatedAt: DateTime!
+  """
+  Agent session URL.
+  """
+  url: String
 }
 
 type AgentSessionConnection {
@@ -524,13 +569,17 @@ input AgentSessionCreateInput {
   """
   appUserId: String!
   """
+  [Internal] Serialized JSON representing the page contexts this session is related to. Used for direct chat sessions to provide context about the current page (e.g., Issue, Project).
+  """
+  context: JSONObject
+  """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
   """
   id: String
   """
-  The issue that this session will be associated with.
+  The issue that this session will be associated with. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
-  issueId: String!
+  issueId: String
 }
 
 input AgentSessionCreateOnComment {
@@ -542,6 +591,10 @@ input AgentSessionCreateOnComment {
   The URL of an external agent-hosted page associated with this session.
   """
   externalLink: String
+  """
+  URLs of external resources associated with this session.
+  """
+  externalUrls: [AgentSessionExternalUrlInput!]
 }
 
 input AgentSessionCreateOnIssue {
@@ -550,7 +603,11 @@ input AgentSessionCreateOnIssue {
   """
   externalLink: String
   """
-  The issue that this session will be associated with.
+  URLs of external resources associated with this session.
+  """
+  externalUrls: [AgentSessionExternalUrlInput!]
+  """
+  The issue that this session will be associated with. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String!
 }
@@ -604,9 +661,35 @@ type AgentSessionEventWebhookPayload {
   """
   previousComments: [CommentChildWebhookPayload!]
   """
+  A formatted prompt string containing the relevant context for the agent session, including issue details, comments, and guidance. Present only for `created` events.
+  """
+  promptContext: String
+  """
   The type of resource.
   """
   type: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
+}
+
+"""
+Input for an external URL associated with an agent session.
+"""
+input AgentSessionExternalUrlInput {
+  """
+  Label for the URL.
+  """
+  label: String!
+  """
+  The URL of the external resource.
+  """
+  url: String!
 }
 
 type AgentSessionPayload {
@@ -637,7 +720,52 @@ enum AgentSessionStatus {
 }
 
 """
-The type of an agent session.
+Join table between agent sessions and pull requests.
+"""
+type AgentSessionToPullRequest implements Node {
+  """
+  The agent session that the pull request is associated with.
+  """
+  agentSession: AgentSession!
+  """
+  The time at which the entity was archived. Null if the entity has not been archived.
+  """
+  archivedAt: DateTime
+  """
+  The time at which the entity was created.
+  """
+  createdAt: DateTime!
+  """
+  The unique identifier of the entity.
+  """
+  id: ID!
+  """
+  The pull request that the agent session is associated with.
+  """
+  pullRequest: PullRequest!
+  """
+  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
+      been updated after creation.
+  """
+  updatedAt: DateTime!
+}
+
+type AgentSessionToPullRequestConnection {
+  edges: [AgentSessionToPullRequestEdge!]!
+  nodes: [AgentSessionToPullRequest!]!
+  pageInfo: PageInfo!
+}
+
+type AgentSessionToPullRequestEdge {
+  """
+  Used in `before` and `after` args
+  """
+  cursor: String!
+  node: AgentSessionToPullRequest!
+}
+
+"""
+[DEPRECATED] The type of an agent session.
 """
 enum AgentSessionType {
   commentThread
@@ -645,12 +773,28 @@ enum AgentSessionType {
 
 input AgentSessionUpdateExternalUrlInput {
   """
+  URLs of external resources to be added to this session.
+  """
+  addedExternalUrls: [AgentSessionExternalUrlInput!]
+  """
   The URL of an external agent-hosted page associated with this session.
   """
   externalLink: String
+  """
+  URLs of external resources associated with this session. Replaces existing URLs.
+  """
+  externalUrls: [AgentSessionExternalUrlInput!]
+  """
+  URLs to be removed from this session.
+  """
+  removedExternalUrls: [String!]
 }
 
 input AgentSessionUpdateInput {
+  """
+  URLs of external resources to be added to this session. Only updatable by the OAuth application that owns the session.
+  """
+  addedExternalUrls: [AgentSessionExternalUrlInput!]
   """
   [Internal] The time the agent session was dismissed. Only updatable by internal clients.
   """
@@ -660,9 +804,32 @@ input AgentSessionUpdateInput {
   """
   externalLink: String
   """
+  URLs of external resources associated with this session. Replaces existing URLs. Only updatable by the OAuth application that owns the session. If supplied, addedExternalUrls and removedExternalUrls are ignored.
+  """
+  externalUrls: [AgentSessionExternalUrlInput!]
+  """
   A dynamically updated list of the agent's execution strategy. Only updatable by the OAuth application that owns the session.
   """
   plan: JSONObject
+  """
+  URLs to be removed from this session. Only updatable by the OAuth application that owns the session.
+  """
+  removedExternalUrls: [String!]
+  """
+  [Internal] User-specific state for the agent session. Only updatable by internal clients.
+  """
+  userState: [AgentSessionUserStateInput!]
+}
+
+input AgentSessionUserStateInput {
+  """
+  The time at which the user most recently viewed the session.
+  """
+  lastReadAt: DateTime
+  """
+  The ID of the user this state belongs to.
+  """
+  userId: String!
 }
 
 """
@@ -745,6 +912,10 @@ type AgentSessionWebhookPayload {
   The time at which the entity was updated.
   """
   updatedAt: String!
+  """
+  The URL of the agent session.
+  """
+  url: String
 }
 
 """
@@ -813,6 +984,14 @@ type AppUserNotificationWebhookPayload {
   The type of resource.
   """
   type: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -855,6 +1034,14 @@ type AppUserTeamAccessChangedWebhookPayload {
   The type of resource.
   """
   type: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -1139,7 +1326,7 @@ input AttachmentCreateInput {
   """
   id: String
   """
-  The issue to associate the attachment with.
+  The issue to associate the attachment with. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String!
   """
@@ -1799,6 +1986,14 @@ type BaseWebhookPayload {
   ID of the organization for which the webhook belongs to.
   """
   organizationId: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -2212,7 +2407,7 @@ input CommentCreateInput {
   """
   initiativeUpdateId: String
   """
-  The issue to associate the comment with.
+  The issue to associate the comment with. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -2640,6 +2835,14 @@ type CustomResourceWebhookPayload {
   The type of resource.
   """
   type: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -2819,7 +3022,7 @@ type CustomView implements Node {
     """
     Include projects from sub-teams when the custom view is associated with a team.
     """
-    includeSubTeams: Boolean = false
+    includeSubTeams: Boolean = true
     """
     The number of items to backward paginate (used with before). Defaults to 50.
     """
@@ -3343,6 +3546,10 @@ type Customer implements Node {
       been updated after creation.
   """
   updatedAt: DateTime!
+  """
+  URL of the customer in Linear.
+  """
+  url: String!
 }
 
 """
@@ -3768,7 +3975,7 @@ input CustomerNeedCreateInput {
   """
   id: String
   """
-  The issue this need is referencing.
+  The issue this need is referencing. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -4012,7 +4219,7 @@ input CustomerNeedUpdateInput {
   """
   id: String
   """
-  The issue this need is referencing.
+  The issue this need is referencing. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -4757,13 +4964,13 @@ input CustomerTierFilter {
   """
   description: StringComparator
   """
+  Comparator for the customer tier display name.
+  """
+  displayName: StringComparator
+  """
   Comparator for the identifier.
   """
   id: IDComparator
-  """
-  Comparator for the customer tier name.
-  """
-  name: StringComparator
   """
   Compound filters, one of which needs to be matched by the customer tier.
   """
@@ -4915,6 +5122,15 @@ input CustomerUpsertInput {
 }
 
 """
+Mode that controls who can see and set Customers in Slack Asks.
+"""
+enum CustomerVisibilityMode {
+  LinearOnly
+  SlackMembers
+  SlackMembersAndGuests
+}
+
+"""
 Payload for a customer webhook.
 """
 type CustomerWebhookPayload {
@@ -4994,6 +5210,10 @@ type CustomerWebhookPayload {
   The time at which the entity was updated.
   """
   updatedAt: String!
+  """
+  The URL of the customer.
+  """
+  url: String!
 }
 
 """
@@ -5032,6 +5252,39 @@ type Cycle implements Node {
   The cycle's description.
   """
   description: String
+  """
+  [Internal] Documents associated with the cycle.
+  """
+  documents(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    Filter returned documents.
+    """
+    filter: DocumentFilter
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): DocumentConnection!
   """
   The end time of the cycle.
   """
@@ -5105,6 +5358,35 @@ type Cycle implements Node {
     """
     orderBy: PaginationOrderBy
   ): IssueConnection!
+  """
+  [Internal] Links associated with the cycle.
+  """
+  links(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): EntityExternalLinkConnection!
   """
   The custom name of the cycle.
   """
@@ -5699,6 +5981,7 @@ union DataWebhookPayload =
   | InitiativeWebhookPayload
   | IssueLabelWebhookPayload
   | IssueWebhookPayload
+  | ProjectLabelWebhookPayload
   | ProjectUpdateWebhookPayload
   | ProjectWebhookPayload
   | ReactionWebhookPayload
@@ -5876,6 +6159,10 @@ type Document implements Node {
   """
   creator: User
   """
+  [Internal] The cycle that the document is associated with.
+  """
+  cycle: Cycle
+  """
   The ID of the document content associated with the document.
   """
   documentContentId: String
@@ -5907,6 +6194,10 @@ type Document implements Node {
   The project that the document is associated with.
   """
   project: Project
+  """
+  [Internal] The release that the document is associated with.
+  """
+  release: Release
   """
   The document's unique URL slug.
   """
@@ -6113,6 +6404,10 @@ input DocumentCreateInput {
   """
   content: String
   """
+  [Internal] Related cycle for the document.
+  """
+  cycleId: String
+  """
   The icon of the document.
   """
   icon: String
@@ -6125,7 +6420,7 @@ input DocumentCreateInput {
   """
   initiativeId: String
   """
-  [Internal] Related issue for the document.
+  Related issue for the document. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -6136,6 +6431,10 @@ input DocumentCreateInput {
   Related project for the document.
   """
   projectId: String
+  """
+  [Internal] Related release for the document.
+  """
+  releaseId: String
   """
   [Internal] The resource folder containing the document.
   """
@@ -6436,6 +6735,10 @@ type DocumentSearchResult implements Node {
   """
   creator: User
   """
+  [Internal] The cycle that the document is associated with.
+  """
+  cycle: Cycle
+  """
   The ID of the document content associated with the document.
   """
   documentContentId: String
@@ -6471,6 +6774,10 @@ type DocumentSearchResult implements Node {
   The project that the document is associated with.
   """
   project: Project
+  """
+  [Internal] The release that the document is associated with.
+  """
+  release: Release
   """
   The document's unique URL slug.
   """
@@ -6524,6 +6831,10 @@ input DocumentUpdateInput {
   """
   content: String
   """
+  [Internal] Related cycle for the document.
+  """
+  cycleId: String
+  """
   The time at which the document was hidden.
   """
   hiddenAt: DateTime
@@ -6536,7 +6847,7 @@ input DocumentUpdateInput {
   """
   initiativeId: String
   """
-  [Internal] Related issue for the document.
+  Related issue for the document. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -6547,6 +6858,10 @@ input DocumentUpdateInput {
   Related project for the document.
   """
   projectId: String
+  """
+  [Internal] Related release for the document.
+  """
+  releaseId: String
   """
   [Internal] The resource folder containing the document.
   """
@@ -7044,6 +7359,10 @@ type EmailUnsubscribePayload {
 
 input EmailUserAccountAuthChallengeInput {
   """
+  Response from the login challenge.
+  """
+  challengeResponse: String
+  """
   Auth code for the client initiating the sequence.
   """
   clientAuthCode: String
@@ -7245,6 +7564,10 @@ type EntityExternalLinkConnection {
 
 input EntityExternalLinkCreateInput {
   """
+  [Internal] The cycle associated with the link.
+  """
+  cycleId: String
+  """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
   """
   id: String
@@ -7260,6 +7583,10 @@ input EntityExternalLinkCreateInput {
   The project associated with the link.
   """
   projectId: String
+  """
+  [Internal] The release associated with the link.
+  """
+  releaseId: String
   """
   [Internal] The resource folder containing the link.
   """
@@ -7356,6 +7683,14 @@ type EntityWebhookPayload {
   URL for the entity.
   """
   url: String
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -7804,6 +8139,14 @@ type Favorite implements Node {
   """
   pullRequest: PullRequest
   """
+  [ALPHA] The favorited release.
+  """
+  release: Release
+  """
+  [ALPHA] The favorited release pipeline.
+  """
+  releasePipeline: ReleasePipeline
+  """
   The order of the item in the favorites list.
   """
   sortOrder: Float!
@@ -7878,7 +8221,7 @@ input FavoriteCreateInput {
   """
   initiativeTab: InitiativeTab
   """
-  The identifier of the issue to favorite.
+  The identifier of the issue to favorite. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -7913,6 +8256,14 @@ input FavoriteCreateInput {
   The identifier of the pull request to favorite.
   """
   pullRequestId: String
+  """
+  [ALPHA] The identifier of the release to favorite.
+  """
+  releaseId: String
+  """
+  [ALPHA] The identifier of the release pipeline to favorite.
+  """
+  releasePipelineId: String
   """
   The position of the item in the favorites list.
   """
@@ -8741,6 +9092,10 @@ type IdentityProvider implements Node {
   """
   adminsGroupPush: JSONObject
   """
+  Whether users are allowed to change their name and display name even if SCIM is enabled.
+  """
+  allowNameChange: Boolean!
+  """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
@@ -8967,6 +9322,35 @@ type Initiative implements Node {
   The unique identifier of the entity.
   """
   id: ID!
+  """
+  Initiative updates associated with the initiative.
+  """
+  initiativeUpdates(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): InitiativeUpdateConnection!
   """
   Settings for all integrations associated with that initiative.
   """
@@ -10062,6 +10446,10 @@ type InitiativeUpdate implements Node {
   [Internal] The content of the update as a Prosemirror document.
   """
   bodyData: String!
+  """
+  Number of comments associated with the initiative update.
+  """
+  commentCount: Int!
   """
   Comments associated with the initiative update.
   """
@@ -11810,6 +12198,27 @@ type Issue implements Node {
   """
   state: WorkflowState!
   """
+  [ALPHA] The issue's workflow states over time.
+  """
+  stateHistory(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+  ): IssueStateSpanConnection!
+  """
   The order of the item in the sub-issue list. Only set if the issue has a parent.
   """
   subIssueSortOrder: Float
@@ -12160,6 +12569,10 @@ input IssueCollectionFilter {
   """
   hasRelatedRelations: RelationExistsComparator
   """
+  Comparator for filtering issues which have been shared with users outside of the team.
+  """
+  hasSharedUsers: RelationExistsComparator
+  """
   [Internal] Comparator for filtering issues which have suggested assignees.
   """
   hasSuggestedAssignees: RelationExistsComparator
@@ -12186,7 +12599,7 @@ input IssueCollectionFilter {
   """
   Comparator for the identifier.
   """
-  id: IDComparator
+  id: IssueIDComparator
   """
   Filters that issue labels must satisfy.
   """
@@ -12243,6 +12656,10 @@ input IssueCollectionFilter {
   [Internal] Comparator for the issues content.
   """
   searchableContent: ContentComparator
+  """
+  Filters that users the issue has been shared with must satisfy.
+  """
+  sharedWith: UserCollectionFilter
   """
   Comparator for the issues sla status.
   """
@@ -12511,7 +12928,7 @@ input IssueCreateInput {
   """
   lastAppliedTemplateId: String
   """
-  The identifier of the parent issue.
+  The identifier of the parent issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   parentId: String
   """
@@ -12913,6 +13330,10 @@ input IssueFilter {
   """
   hasRelatedRelations: RelationExistsComparator
   """
+  Comparator for filtering issues which have been shared with users outside of the team.
+  """
+  hasSharedUsers: RelationExistsComparator
+  """
   [Internal] Comparator for filtering issues which have suggested assignees.
   """
   hasSuggestedAssignees: RelationExistsComparator
@@ -12939,7 +13360,7 @@ input IssueFilter {
   """
   Comparator for the identifier.
   """
-  id: IDComparator
+  id: IssueIDComparator
   """
   Filters that issue labels must satisfy.
   """
@@ -12992,6 +13413,10 @@ input IssueFilter {
   [Internal] Comparator for the issues content.
   """
   searchableContent: ContentComparator
+  """
+  Filters that users the issue has been shared with must satisfy.
+  """
+  sharedWith: UserCollectionFilter
   """
   Comparator for the issues sla status.
   """
@@ -13081,6 +13506,14 @@ type IssueHistory implements Node {
   The labels that were added to the issue.
   """
   addedLabels: [IssueLabel!]
+  """
+  [ALPHA] ID's of releases that the issue was added to.
+  """
+  addedToReleaseIds: [String!]
+  """
+  The releases that the issue was added to.
+  """
+  addedToReleases: [Release!]
   """
   Whether the issue is archived at the time of this history entry.
   """
@@ -13210,6 +13643,14 @@ type IssueHistory implements Node {
   """
   relationChanges: [IssueRelationHistoryPayload!]
   """
+  [ALPHA] ID's of releases that the issue was removed from.
+  """
+  removedFromReleaseIds: [String!]
+  """
+  The releases that the issue was removed from.
+  """
+  removedFromReleases: [Release!]
+  """
   ID's of labels that were removed.
   """
   removedLabelIds: [String!]
@@ -13328,6 +13769,28 @@ type IssueHistoryEdge {
   """
   cursor: String!
   node: IssueHistory!
+}
+
+"""
+Comparator for issue identifiers.
+"""
+input IssueIDComparator {
+  """
+  Equals constraint.
+  """
+  eq: ID
+  """
+  In-array constraint.
+  """
+  in: [ID!]
+  """
+  Not-equals constraint.
+  """
+  neq: ID
+  """
+  Not-in-array constraint.
+  """
+  nin: [ID!]
 }
 
 """
@@ -14233,11 +14696,11 @@ input IssueRelationCreateInput {
   """
   id: String
   """
-  The identifier of the issue that is related to another issue.
+  The identifier of the issue that is related to another issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String!
   """
-  The identifier of the related issue.
+  The identifier of the related issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   relatedIssueId: String!
   """
@@ -14295,11 +14758,11 @@ enum IssueRelationType {
 
 input IssueRelationUpdateInput {
   """
-  The identifier of the issue that is related to another issue.
+  The identifier of the issue that is related to another issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
-  The identifier of the related issue.
+  The identifier of the related issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   relatedIssueId: String
   """
@@ -14928,6 +15391,27 @@ type IssueSearchResult implements Node {
   """
   state: WorkflowState!
   """
+  [ALPHA] The issue's workflow states over time.
+  """
+  stateHistory(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+  ): IssueStateSpanConnection!
+  """
   The order of the item in the sub-issue list. Only set if the issue has a parent.
   """
   subIssueSortOrder: Float
@@ -15068,6 +15552,14 @@ type IssueSlaWebhookPayload {
   URL for the issue.
   """
   url: String
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -15174,6 +15666,46 @@ input IssueSortInput {
   Sort by workflow state type
   """
   workflowState: WorkflowStateSort
+}
+
+"""
+A continuous period of time during which an issue remained in a specific workflow state.
+"""
+type IssueStateSpan {
+  """
+  The timestamp when the issue left this state. Null if the issue is currently in this state.
+  """
+  endedAt: DateTime
+  """
+  The unique identifier of the state span.
+  """
+  id: ID!
+  """
+  The timestamp when the issue entered this state.
+  """
+  startedAt: DateTime!
+  """
+  The workflow state for this span.
+  """
+  state: WorkflowState
+  """
+  The workflow state identifier for this span.
+  """
+  stateId: ID!
+}
+
+type IssueStateSpanConnection {
+  edges: [IssueStateSpanEdge!]!
+  nodes: [IssueStateSpan!]!
+  pageInfo: PageInfo!
+}
+
+type IssueStateSpanEdge {
+  """
+  Used in `before` and `after` args
+  """
+  cursor: String!
+  node: IssueStateSpan!
 }
 
 """
@@ -15434,6 +15966,87 @@ type IssueTitleSuggestionFromCustomerRequestPayload {
 }
 
 """
+[Internal] Join table between issues and releases.
+"""
+type IssueToRelease implements Node {
+  """
+  The time at which the entity was archived. Null if the entity has not been archived.
+  """
+  archivedAt: DateTime
+  """
+  The time at which the entity was created.
+  """
+  createdAt: DateTime!
+  """
+  The unique identifier of the entity.
+  """
+  id: ID!
+  """
+  The issue associated with the release.
+  """
+  issue: Issue!
+  """
+  The release associated with the issue.
+  """
+  release: Release!
+  """
+  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
+      been updated after creation.
+  """
+  updatedAt: DateTime!
+}
+
+type IssueToReleaseConnection {
+  edges: [IssueToReleaseEdge!]!
+  nodes: [IssueToRelease!]!
+  pageInfo: PageInfo!
+}
+
+"""
+[ALPHA] The properties of the issueToRelease to create.
+"""
+input IssueToReleaseCreateInput {
+  """
+  The identifier in UUID v4 format. If none is provided, the backend will generate one.
+  """
+  id: String
+  """
+  The identifier of the issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
+  """
+  issueId: String!
+  """
+  The identifier of the release
+  """
+  releaseId: String!
+}
+
+type IssueToReleaseEdge {
+  """
+  Used in `before` and `after` args
+  """
+  cursor: String!
+  node: IssueToRelease!
+}
+
+"""
+[ALPHA] The result of an issueToRelease mutation.
+"""
+type IssueToReleasePayload {
+  """
+  The issueToRelease that was created or updated.
+  """
+  issueToRelease: IssueToRelease!
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+"""
 An issue unassignment notification type.
 """
 scalar IssueUnassignedFromYouNotificationType
@@ -15534,7 +16147,7 @@ input IssueUpdateInput {
   """
   lastAppliedTemplateId: String
   """
-  The identifier of the parent issue.
+  The identifier of the parent issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   parentId: String
   """
@@ -16333,7 +16946,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the Discord message.
+    The issue for which to link the Discord message. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16370,7 +16983,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the Front conversation.
+    The issue for which to link the Front conversation. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16395,7 +17008,7 @@ type Mutation {
     """
     id: String
     """
-    The Linear issue for which to link the GitHub issue.
+    The Linear issue for which to link the GitHub issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16424,7 +17037,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the GitHub pull request.
+    The issue for which to link the GitHub pull request. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16457,7 +17070,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the GitLab merge request.
+    The issue for which to link the GitLab merge request. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16498,7 +17111,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the Intercom conversation.
+    The issue for which to link the Intercom conversation. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16527,7 +17140,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the Jira issue.
+    The issue for which to link the Jira issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16560,7 +17173,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the Salesforce case.
+    The issue for which to link the Salesforce case. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16589,7 +17202,7 @@ type Mutation {
     """
     id: String
     """
-    The issue to which to link the Slack message.
+    The issue to which to link the Slack message. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16622,7 +17235,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the url.
+    The issue for which to link the url. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -16651,7 +17264,7 @@ type Mutation {
     """
     id: String
     """
-    The issue for which to link the Zendesk ticket.
+    The issue for which to link the Zendesk ticket. Can be a UUID or issue identifier (e.g., 'LIN-123').
     """
     issueId: String!
     """
@@ -18124,6 +18737,19 @@ type Mutation {
     service: String!
   ): SlackChannelConnectPayload!
   """
+  [Internal] Enables Linear Agent Slack workflow access for a Slack integration.
+  """
+  integrationSlackWorkflowAccessUpdate(
+    """
+    Whether to enable workflow access.
+    """
+    enabled: Boolean!
+    """
+    The ID of the integration to toggle workflow access for.
+    """
+    integrationId: String!
+  ): IntegrationPayload!
+  """
   Creates a new integrationTemplate join.
   """
   integrationTemplateCreate(
@@ -18642,6 +19268,37 @@ type Mutation {
     userId: String
   ): IssuePayload!
   """
+  [ALPHA] Creates a new issueToRelease join, adding an issue to a release.
+  """
+  issueToReleaseCreate(
+    """
+    The properties of the issueToRelease to create.
+    """
+    input: IssueToReleaseCreateInput!
+  ): IssueToReleasePayload!
+  """
+  [ALPHA] Deletes an issueToRelease by its identifier, removing an issue from a release.
+  """
+  issueToReleaseDelete(
+    """
+    The identifier of the issueToRelease to delete
+    """
+    id: String!
+  ): DeletePayload!
+  """
+  [ALPHA] Deletes an issueToRelease by issue and release identifiers
+  """
+  issueToReleaseDeleteByIssueAndRelease(
+    """
+    The identifier of the issue. Can be a UUID or issue identifier (e.g., 'LIN-123').
+    """
+    issueId: String!
+    """
+    The identifier of the release
+    """
+    releaseId: String!
+  ): DeletePayload!
+  """
   Unarchives an issue.
   """
   issueUnarchive(
@@ -19070,6 +19727,19 @@ type Mutation {
     id: String!
   ): ProjectArchivePayload!
   """
+  Disables external sync on a project.
+  """
+  projectExternalSyncDisable(
+    """
+    The ID of the project to disable external sync for.
+    """
+    projectId: String!
+    """
+    The source of the external sync to disable.
+    """
+    syncSource: ExternalSyncService!
+  ): ProjectPayload!
+  """
   Creates a new project label.
   """
   projectLabelCreate(
@@ -19379,6 +20049,153 @@ type Mutation {
     """
     type: String
   ): IntegrationPayload!
+  """
+  [ALPHA] Archives a release.
+  """
+  releaseArchive(
+    """
+    The identifier of the release to archive.
+    """
+    id: String!
+  ): ReleaseArchivePayload!
+  """
+  [ALPHA] Marks a release as completed. If version is provided, completes that specific release; otherwise completes the most recent started release.
+  """
+  releaseComplete(
+    """
+    The input containing the pipeline ID and optional version.
+    """
+    input: ReleaseCompleteInput!
+  ): ReleasePayload!
+  """
+  [ALPHA] Creates a new release.
+  """
+  releaseCreate(
+    """
+    The release to create.
+    """
+    input: ReleaseCreateInput!
+  ): ReleasePayload!
+  """
+  [ALPHA] Archives a release pipeline.
+  """
+  releasePipelineArchive(
+    """
+    The identifier of the release pipeline to archive.
+    """
+    id: String!
+  ): ReleasePipelineArchivePayload!
+  """
+  [ALPHA] Creates a new release pipeline.
+  """
+  releasePipelineCreate(
+    """
+    The ReleasePipeline object to create.
+    """
+    input: ReleasePipelineCreateInput!
+  ): ReleasePipelinePayload!
+  """
+  [ALPHA] Deletes a release pipeline.
+  """
+  releasePipelineDelete(
+    """
+    The identifier of the release pipeline to delete.
+    """
+    id: String!
+  ): DeletePayload!
+  """
+  [ALPHA] Unarchives a release pipeline.
+  """
+  releasePipelineUnarchive(
+    """
+    The identifier of the release pipeline to unarchive.
+    """
+    id: String!
+  ): ReleasePipelineArchivePayload!
+  """
+  [ALPHA] Updates a release pipeline.
+  """
+  releasePipelineUpdate(
+    """
+    The identifier of the release pipeline to update.
+    """
+    id: String!
+    """
+    A partial ReleasePipeline object to update the ReleasePipeline with.
+    """
+    input: ReleasePipelineUpdateInput!
+  ): ReleasePipelinePayload!
+  """
+  [ALPHA] Archives a release stage.
+  """
+  releaseStageArchive(
+    """
+    The identifier of the release stage to archive.
+    """
+    id: String!
+  ): ReleaseStageArchivePayload!
+  """
+  [ALPHA] Creates a new release stage.
+  """
+  releaseStageCreate(
+    """
+    The ReleaseStage object to create.
+    """
+    input: ReleaseStageCreateInput!
+  ): ReleaseStagePayload!
+  """
+  [ALPHA] Unarchives a release stage.
+  """
+  releaseStageUnarchive(
+    """
+    The identifier of the release stage to unarchive.
+    """
+    id: String!
+  ): ReleaseStageArchivePayload!
+  """
+  [ALPHA] Updates a release stage.
+  """
+  releaseStageUpdate(
+    """
+    The identifier of the release stage to update.
+    """
+    id: String!
+    """
+    A partial ReleaseStage object to update the ReleaseStage with.
+    """
+    input: ReleaseStageUpdateInput!
+  ): ReleaseStagePayload!
+  """
+  [ALPHA] Syncs release data.
+  """
+  releaseSync(
+    """
+    The release data to sync.
+    """
+    input: ReleaseSyncInput!
+  ): ReleasePayload!
+  """
+  [ALPHA] Unarchives a release.
+  """
+  releaseUnarchive(
+    """
+    The identifier of the release to unarchive.
+    """
+    id: String!
+  ): ReleaseArchivePayload!
+  """
+  [ALPHA] Updates a release.
+  """
+  releaseUpdate(
+    """
+    The identifier of the release to update.
+    """
+    id: String!
+    """
+    A partial Release object to update the Release with.
+    """
+    input: ReleaseUpdateInput!
+  ): ReleasePayload!
   """
   Re-send an organization invite.
   """
@@ -19918,6 +20735,15 @@ type Mutation {
     """
     id: String!
   ): DeletePayload!
+  """
+  Rotates the signing secret for a Webhook.
+  """
+  webhookRotateSecret(
+    """
+    The identifier of the Webhook to rotate the secret for.
+    """
+    id: String!
+  ): WebhookRotateSecretPayload!
   """
   Updates an existing Webhook.
   """
@@ -21213,6 +22039,10 @@ input NullableIssueFilter {
   """
   hasRelatedRelations: RelationExistsComparator
   """
+  Comparator for filtering issues which have been shared with users outside of the team.
+  """
+  hasSharedUsers: RelationExistsComparator
+  """
   [Internal] Comparator for filtering issues which have suggested assignees.
   """
   hasSuggestedAssignees: RelationExistsComparator
@@ -21239,7 +22069,7 @@ input NullableIssueFilter {
   """
   Comparator for the identifier.
   """
-  id: IDComparator
+  id: IssueIDComparator
   """
   Filters that issue labels must satisfy.
   """
@@ -21296,6 +22126,10 @@ input NullableIssueFilter {
   [Internal] Comparator for the issues content.
   """
   searchableContent: ContentComparator
+  """
+  Filters that users the issue has been shared with must satisfy.
+  """
+  sharedWith: UserCollectionFilter
   """
   Comparator for the issues sla status.
   """
@@ -21594,6 +22428,10 @@ input NullableProjectMilestoneFilter {
   Compound filters, one of which need to be matched by the project milestone.
   """
   or: [NullableProjectMilestoneFilter!]
+  """
+  Filters that the project milestone's project must satisfy.
+  """
+  project: NullableProjectFilter
   """
   Comparator for the project milestone target date.
   """
@@ -21994,6 +22832,14 @@ type OAuthAppWebhookPayload {
   The type of resource.
   """
   type: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -22036,6 +22882,14 @@ type OAuthAuthorizationWebhookPayload {
   ID of the user that the authorization belongs to.
   """
   userId: String!
+  """
+  The ID of the webhook that sent this event.
+  """
+  webhookId: String!
+  """
+  Unix timestamp in milliseconds when the webhook was sent.
+  """
+  webhookTimestamp: Float!
 }
 
 """
@@ -22283,17 +23137,21 @@ type Organization implements Node {
   """
   aiDiscussionSummariesEnabled: Boolean!
   """
+  [INTERNAL] Configure per-modality AI host providers and model families.
+  """
+  aiProviderConfiguration: JSONObject
+  """
   Whether the organization has enabled resolved thread AI summaries.
   """
   aiThreadSummariesEnabled: Boolean!
   """
-  Whether member users are allowed to send invites.
+  [DEPRECATED] Whether member users are allowed to send invites.
   """
-  allowMembersToInvite: Boolean
+  allowMembersToInvite: Boolean @deprecated(reason: "Use `securitySettings.invitationsRole` instead.")
   """
-  [INTERNAL] Permitted AI providers in order of preference. Empty array means all providers are allowed.
+  [INTERNAL] Permitted AI providers.
   """
-  allowedAiProviders: [String!]!
+  allowedAiProviders: [String!]! @deprecated(reason: "Use aiProviderConfiguration instead.")
   """
   Allowed authentication providers, empty array means all are allowed.
   """
@@ -22535,13 +23393,13 @@ type Organization implements Node {
   """
   releaseChannel: ReleaseChannel!
   """
-  Whether workspace label creation, update, and deletion is restricted to admins.
+  [DEPRECATED] Whether workspace label creation, update, and deletion is restricted to admins.
   """
-  restrictLabelManagementToAdmins: Boolean
+  restrictLabelManagementToAdmins: Boolean @deprecated(reason: "Use `securitySettings.labelManagementRole` instead.")
   """
-  Whether team creation is restricted to admins.
+  [DEPRECATED] Whether team creation is restricted to admins.
   """
-  restrictTeamCreationToAdmins: Boolean
+  restrictTeamCreationToAdmins: Boolean @deprecated(reason: "Use `securitySettings.teamCreationRole` instead.")
   """
   Whether the organization is using a roadmap.
   """
@@ -22648,6 +23506,10 @@ type Organization implements Node {
   The time at which the trial will end.
   """
   trialEndsAt: DateTime
+  """
+  The time at which the trial started.
+  """
+  trialStartsAt: DateTime
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -23188,6 +24050,10 @@ input OrganizationUpdateInput {
   """
   aiDiscussionSummariesEnabled: Boolean
   """
+  [INTERNAL] Configure per-modality AI host providers and model families.
+  """
+  aiProviderConfiguration: JSONObject
+  """
   [INTERNAL] Whether the organization has opted in to AI telemetry.
   """
   aiTelemetryEnabled: Boolean
@@ -23195,14 +24061,6 @@ input OrganizationUpdateInput {
   Whether the organization has enabled resolved thread AI summaries.
   """
   aiThreadSummariesEnabled: Boolean
-  """
-  Whether member users are allowed to send invites.
-  """
-  allowMembersToInvite: Boolean
-  """
-  [INTERNAL] Permitted AI providers in order of preference. Empty array means all providers are allowed.
-  """
-  allowedAiProviders: [String!]
   """
   List of services that are allowed to be used for login.
   """
@@ -23260,6 +24118,10 @@ input OrganizationUpdateInput {
   """
   gitPublicLinkbackMessagesEnabled: Boolean
   """
+  Whether HIPAA compliance is enabled for organization.
+  """
+  hipaaComplianceEnabled: Boolean
+  """
   [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
   """
   initiativeUpdateReminderFrequencyInWeeks: Float
@@ -23288,10 +24150,6 @@ input OrganizationUpdateInput {
   """
   oauthAppReview: Boolean
   """
-  [INTERNAL] Whether the organization has enabled the member API keys.
-  """
-  personalApiKeysEnabled: Boolean
-  """
   The n-weekly frequency at which to prompt for project updates.
   """
   projectUpdateReminderFrequencyInWeeks: Float
@@ -23311,14 +24169,6 @@ input OrganizationUpdateInput {
   Whether agent invocation is restricted to full workspace members.
   """
   restrictAgentInvocationToMembers: Boolean
-  """
-  Whether label creation is restricted to admins.
-  """
-  restrictLabelManagementToAdmins: Boolean
-  """
-  Whether team creation is restricted to admins.
-  """
-  restrictTeamCreationToAdmins: Boolean
   """
   Whether the organization is using roadmap.
   """
@@ -24159,6 +25009,35 @@ type Project implements Node {
   """
   inProgressScopeHistory: [Float!]!
   """
+  Associations of this project to parent initiatives.
+  """
+  initiativeToProjects(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): InitiativeToProjectConnection!
+  """
   Initiatives that this project belongs to.
   """
   initiatives(
@@ -24971,6 +25850,14 @@ input ProjectCreateInput {
   The identifiers of the teams this project is associated with.
   """
   teamIds: [String!]!
+  """
+  The ID of the template to apply when creating the project.
+  """
+  templateId: String
+  """
+  When set to true, the default project template of the first team provided will be applied. If templateId is provided, this will be ignored.
+  """
+  useDefaultTemplate: Boolean
 }
 
 """
@@ -25366,6 +26253,28 @@ type ProjectLabel implements Node {
 }
 
 """
+Certain properties of a project label.
+"""
+type ProjectLabelChildWebhookPayload {
+  """
+  The color of the project label.
+  """
+  color: String!
+  """
+  The ID of the project label.
+  """
+  id: String!
+  """
+  The name of the project label.
+  """
+  name: String!
+  """
+  The parent ID of the project label.
+  """
+  parentId: String
+}
+
+"""
 Project label filtering options.
 """
 input ProjectLabelCollectionFilter {
@@ -25553,6 +26462,52 @@ input ProjectLabelUpdateInput {
 }
 
 """
+Payload for a project label webhook.
+"""
+type ProjectLabelWebhookPayload {
+  """
+  The time at which the entity was archived.
+  """
+  archivedAt: String
+  """
+  The color of the project label.
+  """
+  color: String!
+  """
+  The time at which the entity was created.
+  """
+  createdAt: String!
+  """
+  The creator ID of the project label.
+  """
+  creatorId: String
+  """
+  The label's description.
+  """
+  description: String
+  """
+  The ID of the entity.
+  """
+  id: String!
+  """
+  Whether the label is a group.
+  """
+  isGroup: Boolean!
+  """
+  The name of the project label.
+  """
+  name: String!
+  """
+  The parent ID of the project label.
+  """
+  parentId: String
+  """
+  The time at which the entity was updated.
+  """
+  updatedAt: String!
+}
+
+"""
 Project lead sorting options.
 """
 input ProjectLeadSort {
@@ -25731,6 +26686,10 @@ input ProjectMilestoneCollectionFilter {
   """
   or: [ProjectMilestoneCollectionFilter!]
   """
+  Filters that the project milestone's project must satisfy.
+  """
+  project: NullableProjectFilter
+  """
   Filters that needs to be matched by some milestones.
   """
   some: ProjectMilestoneFilter
@@ -25813,6 +26772,10 @@ input ProjectMilestoneFilter {
   Compound filters, one of which need to be matched by the project milestone.
   """
   or: [ProjectMilestoneFilter!]
+  """
+  Filters that the project milestone's project must satisfy.
+  """
+  project: NullableProjectFilter
   """
   Comparator for the project milestone target date.
   """
@@ -26635,6 +27598,35 @@ type ProjectSearchResult implements Node {
   """
   inProgressScopeHistory: [Float!]!
   """
+  Associations of this project to parent initiatives.
+  """
+  initiativeToProjects(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): InitiativeToProjectConnection!
+  """
   Initiatives that this project belongs to.
   """
   initiatives(
@@ -27450,6 +28442,10 @@ type ProjectUpdate implements Node {
   [Internal] The content of the update as a Prosemirror document.
   """
   bodyData: String!
+  """
+  Number of comments associated with the project update.
+  """
+  commentCount: Int!
   """
   Comments associated with the project update.
   """
@@ -28464,6 +29460,24 @@ type PullRequestNotification implements Entity & Node & Notification {
   The user that received the notification.
   """
   user: User!
+}
+
+"""
+Input for referencing a pull request by repository and number.
+"""
+input PullRequestReferenceInput {
+  """
+  The pull request number.
+  """
+  number: Float!
+  """
+  The name of the repository.
+  """
+  repositoryName: String!
+  """
+  The owner of the repository (e.g., organization or user name).
+  """
+  repositoryOwner: String!
 }
 
 enum PullRequestReviewTool {
@@ -29691,7 +30705,7 @@ type Query {
     orderBy: PaginationOrderBy
   ): IssueRelationConnection!
   """
-  [Internal] Returns code repositories that are most likely to be relevant for implementing an issue.
+  Returns code repositories that are most likely to be relevant for implementing an issue.
   """
   issueRepositorySuggestions(
     """
@@ -29748,6 +30762,39 @@ type Query {
   Suggests issue title based on a customer request.
   """
   issueTitleSuggestionFromCustomerRequest(request: String!): IssueTitleSuggestionFromCustomerRequestPayload!
+  """
+  [ALPHA] One specific issueToRelease.
+  """
+  issueToRelease(id: String!): IssueToRelease!
+  """
+  [ALPHA] Returns a list of issue to release entities.
+  """
+  issueToReleases(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): IssueToReleaseConnection!
   """
   Find issue based on the VCS branch name.
   """
@@ -30179,6 +31226,105 @@ type Query {
   The status of the rate limiter.
   """
   rateLimitStatus: RateLimitPayload!
+  """
+  [ALPHA] One specific release.
+  """
+  release(id: String!): Release!
+  """
+  [ALPHA] One specific release pipeline.
+  """
+  releasePipeline(id: String!): ReleasePipeline!
+  """
+  [ALPHA] All release pipelines.
+  """
+  releasePipelines(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): ReleasePipelineConnection!
+  """
+  [ALPHA] One specific release stage.
+  """
+  releaseStage(id: String!): ReleaseStage!
+  """
+  [ALPHA] All release stages.
+  """
+  releaseStages(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): ReleaseStageConnection!
+  """
+  [ALPHA] All releases.
+  """
+  releases(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): ReleaseConnection!
   """
   One specific roadmap.
   """
@@ -30885,7 +32031,7 @@ input ReactionCreateInput {
   """
   initiativeUpdateId: String
   """
-  The issue to associate the reaction with.
+  The issue to associate the reaction with. Can be a UUID or issue identifier (e.g., 'LIN-123').
   """
   issueId: String
   """
@@ -31034,6 +32180,157 @@ input RelationExistsComparator {
 }
 
 """
+[Internal] A release.
+"""
+type Release implements Node {
+  """
+  The time at which the entity was archived. Null if the entity has not been archived.
+  """
+  archivedAt: DateTime
+  """
+  The time at which the release was canceled.
+  """
+  canceledAt: DateTime
+  """
+  The commit SHA associated with this release.
+  """
+  commitSha: String
+  """
+  The time at which the release was completed.
+  """
+  completedAt: DateTime
+  """
+  The time at which the entity was created.
+  """
+  createdAt: DateTime!
+  """
+  The release's description.
+  """
+  description: String
+  """
+  [Internal] Documents associated with the release.
+  """
+  documents(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    Filter returned documents.
+    """
+    filter: DocumentFilter
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): DocumentConnection!
+  """
+  The unique identifier of the entity.
+  """
+  id: ID!
+  """
+  [Internal] Links associated with the release.
+  """
+  links(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): EntityExternalLinkConnection!
+  """
+  The name of the release.
+  """
+  name: String!
+  """
+  The pipeline this release belongs to.
+  """
+  pipeline: ReleasePipeline!
+  """
+  The release's unique URL slug.
+  """
+  slugId: String!
+  """
+  The current stage of the release.
+  """
+  stage: ReleaseStage!
+  """
+  The estimated start date of the release.
+  """
+  startDate: TimelessDate
+  """
+  The time at which the release was started.
+  """
+  startedAt: DateTime
+  """
+  The estimated completion date of the release.
+  """
+  targetDate: TimelessDate
+  """
+  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
+      been updated after creation.
+  """
+  updatedAt: DateTime!
+  """
+  The version of the release.
+  """
+  version: String
+}
+
+"""
+A generic payload return from entity archive mutations.
+"""
+type ReleaseArchivePayload implements ArchivePayload {
+  """
+  The archived/unarchived entity. Null if entity was deleted.
+  """
+  entity: Release
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+"""
 Features release channel.
 """
 enum ReleaseChannel {
@@ -31043,6 +32340,568 @@ enum ReleaseChannel {
   preRelease
   privateBeta
   public
+}
+
+input ReleaseCompleteInput {
+  """
+  The identifier of the pipeline to mark a release as completed.
+  """
+  pipelineId: String!
+  """
+  The version of the release to complete. If not provided, the latest started release will be completed.
+  """
+  version: String
+}
+
+type ReleaseConnection {
+  edges: [ReleaseEdge!]!
+  nodes: [Release!]!
+  pageInfo: PageInfo!
+}
+
+"""
+The input for creating a release.
+"""
+input ReleaseCreateInput {
+  """
+  The commit SHA associated with this release.
+  """
+  commitSha: String
+  """
+  The description of the release.
+  """
+  description: String
+  """
+  The identifier in UUID v4 format. If none is provided, the backend will generate one.
+  """
+  id: String
+  """
+  The name of the release.
+  """
+  name: String!
+  """
+  The identifier of the pipeline this release belongs to.
+  """
+  pipelineId: String!
+  """
+  The current stage of the release. Defaults to the first 'started' stage.
+  """
+  stageId: String
+  """
+  The estimated start date of the release.
+  """
+  startDate: TimelessDate
+  """
+  The estimated completion date of the release.
+  """
+  targetDate: TimelessDate
+  """
+  The version of the release.
+  """
+  version: String
+}
+
+"""
+Debug sink for release creation diagnostics.
+"""
+input ReleaseDebugSinkInput {
+  """
+  List of paths applied during commit scanning.
+  """
+  includePaths: [String!]
+  """
+  List of commit SHAs that were inspected.
+  """
+  inspectedShas: [String!]!
+  """
+  Map of issue identifiers to their source information.
+  """
+  issues: JSONObject!
+  """
+  Pull request debug information.
+  """
+  pullRequests: [JSONObject!]!
+}
+
+type ReleaseEdge {
+  """
+  Used in `before` and `after` args
+  """
+  cursor: String!
+  node: Release!
+}
+
+type ReleasePayload {
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  The release that was created or updated.
+  """
+  release: Release!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+"""
+[Internal] A release pipeline.
+"""
+type ReleasePipeline implements Node {
+  """
+  The time at which the entity was archived. Null if the entity has not been archived.
+  """
+  archivedAt: DateTime
+  """
+  The time at which the entity was created.
+  """
+  createdAt: DateTime!
+  """
+  The unique identifier of the entity.
+  """
+  id: ID!
+  """
+  Glob patterns to include commits affecting matching file paths.
+  """
+  includePathPatterns: [String!]!
+  """
+  The name of the pipeline.
+  """
+  name: String!
+  """
+  [ALPHA] Releases associated with this pipeline.
+  """
+  releases(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): ReleaseConnection!
+  """
+  The pipeline's unique slug identifier.
+  """
+  slugId: String!
+  """
+  [ALPHA] Stages associated with this pipeline.
+  """
+  stages(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): ReleaseStageConnection!
+  """
+  The type of the pipeline.
+  """
+  type: ReleasePipelineType!
+  """
+  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
+      been updated after creation.
+  """
+  updatedAt: DateTime!
+}
+
+"""
+A generic payload return from entity archive mutations.
+"""
+type ReleasePipelineArchivePayload implements ArchivePayload {
+  """
+  The archived/unarchived entity. Null if entity was deleted.
+  """
+  entity: ReleasePipeline
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+type ReleasePipelineConnection {
+  edges: [ReleasePipelineEdge!]!
+  nodes: [ReleasePipeline!]!
+  pageInfo: PageInfo!
+}
+
+input ReleasePipelineCreateInput {
+  """
+  The identifier in UUID v4 format. If none is provided, the backend will generate one.
+  """
+  id: String
+  """
+  Glob patterns to include commits affecting matching file paths.
+  """
+  includePathPatterns: [String!]
+  """
+  The name of the pipeline.
+  """
+  name: String!
+  """
+  The pipeline's unique slug identifier. If not provided, it will be auto-generated.
+  """
+  slugId: String
+  """
+  The type of the pipeline.
+  """
+  type: ReleasePipelineType
+}
+
+type ReleasePipelineEdge {
+  """
+  Used in `before` and `after` args
+  """
+  cursor: String!
+  node: ReleasePipeline!
+}
+
+type ReleasePipelinePayload {
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  The release pipeline that was created or updated.
+  """
+  releasePipeline: ReleasePipeline!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+"""
+A type of release pipeline.
+"""
+enum ReleasePipelineType {
+  continuous
+  scheduled
+}
+
+input ReleasePipelineUpdateInput {
+  """
+  Glob patterns to include commits affecting matching file paths.
+  """
+  includePathPatterns: [String!]
+  """
+  The name of the pipeline.
+  """
+  name: String
+  """
+  The pipeline's unique slug identifier.
+  """
+  slugId: String
+  """
+  The type of the pipeline.
+  """
+  type: ReleasePipelineType
+}
+
+"""
+[Internal] A release stage.
+"""
+type ReleaseStage implements Node {
+  """
+  The time at which the entity was archived. Null if the entity has not been archived.
+  """
+  archivedAt: DateTime
+  """
+  The UI color of the stage as a HEX string.
+  """
+  color: String!
+  """
+  The time at which the entity was created.
+  """
+  createdAt: DateTime!
+  """
+  The unique identifier of the entity.
+  """
+  id: ID!
+  """
+  The name of the stage.
+  """
+  name: String!
+  """
+  The pipeline this stage belongs to.
+  """
+  pipeline: ReleasePipeline!
+  """
+  The position of the stage.
+  """
+  position: Float!
+  """
+  [ALPHA] Releases associated with this stage.
+  """
+  releases(
+    """
+    A cursor to be used with first for forward pagination
+    """
+    after: String
+    """
+    A cursor to be used with last for backward pagination.
+    """
+    before: String
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+    """
+    Should archived resources be included (default: false)
+    """
+    includeArchived: Boolean
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): ReleaseConnection!
+  """
+  The type of the stage.
+  """
+  type: ReleaseStageType!
+  """
+  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
+      been updated after creation.
+  """
+  updatedAt: DateTime!
+}
+
+"""
+A generic payload return from entity archive mutations.
+"""
+type ReleaseStageArchivePayload implements ArchivePayload {
+  """
+  The archived/unarchived entity. Null if entity was deleted.
+  """
+  entity: ReleaseStage
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+type ReleaseStageConnection {
+  edges: [ReleaseStageEdge!]!
+  nodes: [ReleaseStage!]!
+  pageInfo: PageInfo!
+}
+
+input ReleaseStageCreateInput {
+  """
+  The UI color of the stage as a HEX string.
+  """
+  color: String!
+  """
+  The identifier in UUID v4 format. If none is provided, the backend will generate one.
+  """
+  id: String
+  """
+  The name of the stage.
+  """
+  name: String!
+  """
+  The identifier of the pipeline this stage belongs to.
+  """
+  pipelineId: String!
+  """
+  The position of the stage.
+  """
+  position: Float!
+  """
+  The type of the stage.
+  """
+  type: ReleaseStageType!
+}
+
+type ReleaseStageEdge {
+  """
+  Used in `before` and `after` args
+  """
+  cursor: String!
+  node: ReleaseStage!
+}
+
+type ReleaseStagePayload {
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  The release stage that was created or updated.
+  """
+  releaseStage: ReleaseStage!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
+}
+
+"""
+A type of release stage.
+"""
+enum ReleaseStageType {
+  canceled
+  completed
+  planned
+  started
+}
+
+input ReleaseStageUpdateInput {
+  """
+  The UI color of the stage as a HEX string.
+  """
+  color: String
+  """
+  The name of the stage.
+  """
+  name: String
+  """
+  The position of the stage.
+  """
+  position: Float
+  """
+  The type of the stage.
+  """
+  type: ReleaseStageType
+}
+
+"""
+The release data to sync.
+"""
+input ReleaseSyncInput {
+  """
+  The commit SHA associated with this release.
+  """
+  commitSha: String
+  """
+  Debug information for release creation diagnostics.
+  """
+  debugSink: ReleaseDebugSinkInput
+  """
+  The description of the release.
+  """
+  description: String
+  """
+  The identifier in UUID v4 format. If none is provided, the backend will generate one.
+  """
+  id: String
+  """
+  Issue identifiers (e.g. ENG-123) to associate with this release.
+  """
+  issueIdentifiers: [String!]
+  """
+  The name of the release.
+  """
+  name: String!
+  """
+  The identifier of the pipeline this release belongs to.
+  """
+  pipelineId: String!
+  """
+  Pull request references to look up. Issues linked to found PRs will be associated with this release.
+  """
+  pullRequestReferences: [PullRequestReferenceInput!]
+  """
+  The current stage of the release. Defaults to the first 'completed' stage.
+  """
+  stageId: String
+  """
+  The estimated start date of the release.
+  """
+  startDate: TimelessDate
+  """
+  The estimated completion date of the release.
+  """
+  targetDate: TimelessDate
+  """
+  The version of the release.
+  """
+  version: String
+}
+
+input ReleaseUpdateInput {
+  """
+  The commit SHA associated with this release.
+  """
+  commitSha: String
+  """
+  The description of the release.
+  """
+  description: String
+  """
+  The name of the release.
+  """
+  name: String
+  """
+  The identifier of the pipeline this release belongs to.
+  """
+  pipelineId: String
+  """
+  The current stage of the release.
+  """
+  stageId: String
+  """
+  The estimated start date of the release.
+  """
+  startDate: TimelessDate
+  """
+  The estimated completion date of the release.
+  """
+  targetDate: TimelessDate
+  """
+  The version of the release.
+  """
+  version: String
 }
 
 type RepositorySuggestion {
@@ -31777,6 +33636,10 @@ input SlackAsksSettingsInput {
   """
   canAdministrate: UserRoleType!
   """
+  Controls who can see and set Customers when creating Asks in Slack.
+  """
+  customerVisibility: CustomerVisibilityMode
+  """
   Enterprise id of the connected Slack enterprise
   """
   enterpriseId: String
@@ -32439,6 +34302,10 @@ type Team implements Node {
   """
   aiThreadSummariesEnabled: Boolean!
   """
+  Whether all members in the workspace can join the team. Only used for public teams.
+  """
+  allMembersCanJoin: Boolean
+  """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
@@ -32641,9 +34508,9 @@ type Team implements Node {
   """
   integrationsSettings: IntegrationsSettings
   """
-  Unique hash for the team to be used in invite URLs.
+  [DEPRECATED] Unique hash for the team to be used in invite URLs.
   """
-  inviteHash: String!
+  inviteHash: String! @deprecated(reason: "Not used anymore, simply returning an empty string.")
   """
   Number of issues in the team.
   """
@@ -32920,6 +34787,10 @@ type Team implements Node {
   """
   scimManaged: Boolean!
   """
+  Security settings for the team.
+  """
+  securitySettings: JSONObject!
+  """
   Where to move issues when changing state.
   """
   setIssueSortOrderOnStateChange: String!
@@ -33125,6 +34996,10 @@ input TeamCollectionFilter {
   Compound filters, one of which need to be matched by the team.
   """
   or: [TeamCollectionFilter!]
+  """
+  Filters that the teams parent must satisfy.
+  """
+  parent: NullableTeamFilter
   """
   Filters that needs to be matched by some teams.
   """
@@ -33363,7 +35238,7 @@ type TeamMembership implements Node {
   """
   id: ID!
   """
-  Whether the user is the owner of the team.
+  Whether the user is an owner of the team.
   """
   owner: Boolean!
   """
@@ -33553,6 +35428,41 @@ type TeamPayload {
 }
 
 """
+[Internal] How to handle sub-teams when retiring a parent team.
+"""
+enum TeamRetirementSubTeamHandling {
+  retire
+  unnest
+}
+
+"""
+All possible roles within a team in terms of access to team settings and operations.
+"""
+enum TeamRoleType {
+  member
+  owner
+}
+
+input TeamSecuritySettingsInput {
+  """
+  The minimum team role required to manage labels in the team.
+  """
+  labelManagement: TeamRoleType
+  """
+  The minimum team role required to manage full workspace members (non-guests) in the team.
+  """
+  memberManagement: TeamRoleType
+  """
+  The minimum team role required to manage team settings.
+  """
+  teamManagement: TeamRoleType
+  """
+  The minimum team role required to manage templates in the team.
+  """
+  templateManagement: TeamRoleType
+}
+
+"""
 Issue team sorting options.
 """
 input TeamSort {
@@ -33576,15 +35486,19 @@ input TeamUpdateInput {
   """
   aiThreadSummariesEnabled: Boolean
   """
+  Whether all members in the workspace can join the team. Only used for public teams.
+  """
+  allMembersCanJoin: Boolean
+  """
   Period after which closed and completed issues are automatically archived, in months.
   """
   autoArchivePeriod: Float
   """
-  [INTERNAL] Whether to automatically close all sub-issues when a parent issue in this team is closed.
+  Whether to automatically close all sub-issues when a parent issue in this team is closed.
   """
   autoCloseChildIssues: Boolean
   """
-  [INTERNAL] Whether to automatically close a parent issue in this team if all its sub-issues are closed.
+  Whether to automatically close a parent issue in this team if all its sub-issues are closed.
   """
   autoCloseParentIssues: Boolean
   """
@@ -33660,6 +35574,10 @@ input TeamUpdateInput {
   """
   groupIssueHistory: Boolean
   """
+  [Internal] How to handle sub-teams when retiring. Required if the team has active sub-teams.
+  """
+  handleSubTeamsOnRetirement: TeamRetirementSubTeamHandling
+  """
   The icon of the team.
   """
   icon: String
@@ -33720,9 +35638,17 @@ input TeamUpdateInput {
   """
   requirePriorityToLeaveTriage: Boolean
   """
+  [Internal] When the team was retired.
+  """
+  retiredAt: DateTime
+  """
   Whether the team is managed by SCIM integration. Mutation restricted to workspace admins or owners and only unsetting is allowed!
   """
   scimManaged: Boolean
+  """
+  The security settings for the team.
+  """
+  securitySettings: TeamSecuritySettingsInput
   """
   Whether to move issues to bottom of the column when changing state.
   """
@@ -33811,6 +35737,10 @@ type Template implements Node {
   The original template inherited from.
   """
   inheritedFrom: Template
+  """
+  The date when the template was last applied.
+  """
+  lastAppliedAt: DateTime
   """
   The user who last updated the template.
   """
@@ -35695,6 +37625,10 @@ type ViewPreferencesValues {
   """
   issueGrouping: String
   """
+  The issue sub grouping.
+  """
+  issueSubGrouping: String
+  """
   Whether to show completed issues.
   """
   showCompletedIssues: String
@@ -35715,6 +37649,7 @@ enum ViewType {
   backlog
   board
   completedCycle
+  createdReviews
   customView
   customViews
   customer
@@ -35738,6 +37673,7 @@ enum ViewType {
   myIssues
   myIssuesActivity
   myIssuesCreatedByMe
+  myIssuesSharedWithMe
   myIssuesSubscribedTo
   myReviews
   project
@@ -35749,6 +37685,7 @@ enum ViewType {
   projectsBacklog
   projectsClosed
   quickView
+  release
   reviews
   roadmap
   roadmapAll
@@ -35924,6 +37861,21 @@ type WebhookPayload {
   The webhook entity being mutated.
   """
   webhook: Webhook!
+}
+
+type WebhookRotateSecretPayload {
+  """
+  The identifier of the last sync operation.
+  """
+  lastSyncId: Float!
+  """
+  The new webhook signing secret.
+  """
+  secret: String!
+  """
+  Whether the operation was successful.
+  """
+  success: Boolean!
 }
 
 input WebhookUpdateInput {
