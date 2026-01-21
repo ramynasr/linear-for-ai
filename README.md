@@ -4,8 +4,6 @@ CLI for AI agents to interact with Linear's GraphQL API.
 
 ## Overview
 
-Command-line interface for AI agents to query Linear efficiently:
-
 - Terminal-optimized markdown (token-efficient)
 - JSON output for programmatic use
 - Direct GraphQL access (overcomes MCP limitations)
@@ -25,7 +23,7 @@ Supports macOS (Intel and Apple Silicon) and Linux (x86_64 and ARM64).
 
 ### Pre-built Binaries
 
-Download from the [releases page](https://github.com/ramynasr/linear-for-ai/releases). Replace `{PLATFORM}` with `macos-x64`, `macos-arm64`, `linux-x64`, or `linux-arm64`:
+Download from the [releases page](https://github.com/ramynasr/linear-for-ai/releases):
 
 ```bash
 curl -L https://github.com/ramynasr/linear-for-ai/releases/latest/download/linear-for-ai-{PLATFORM} -o linear-for-ai
@@ -33,7 +31,9 @@ chmod +x linear-for-ai
 sudo mv linear-for-ai /usr/local/bin/
 ```
 
-### From Source (Deno)
+Replace `{PLATFORM}` with `macos-x64`, `macos-arm64`, `linux-x64`, or `linux-arm64`.
+
+### From Source
 
 ```bash
 git clone https://github.com/ramynasr/linear-for-ai.git
@@ -44,301 +44,83 @@ cp ./dist/linear-for-ai /usr/local/bin/
 
 ## Configuration
 
-### Environment Variables
-
-Required: `LINEAR_API_KEY` (get from Linear Settings → API → Personal API Keys)
-
-Optional: `LINEAR_CONFIG`, `HTTPS_PROXY`
+Set your API key (get from Linear Settings > API > Personal API Keys):
 
 ```bash
-LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+export LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### Config File
-
-Customize defaults in `~/.config/linear-for-ai/config.json`:
+Optional config file at `~/.config/linear-for-ai/config.json`:
 
 ```json
 {
   "allowWrites": false,
-  "defaults": {
-    "format": "markdown",
-    "limit": 50,
-    "fields": {
-      "issues": ["id", "identifier", "title", "state.name", "url"]
-    }
-  }
+  "defaults": { "format": "markdown", "limit": 50 }
 }
 ```
 
-See `config.example.json` for all options. Full docs: [docs/configuration.md](docs/configuration.md)
+See [docs/configuration.md](docs/configuration.md) for all options.
 
 ## Usage
 
-### Commands
-
-#### Issues
+### Issues
 
 ```bash
-# List your issues (assigned, created, or subscribed)
-linear-for-ai issues list
-
-# List all issues in workspace
-linear-for-ai issues list --fetch-all
-
-# List with filter
-linear-for-ai issues list --filter '{"state":{"type":{"eq":"started"}}}'
-
-# Show specific issue
-linear-for-ai issues show ENG-123
-linear-for-ai issues show https://linear.app/team/issue/ENG-123
+linear-for-ai issues list                    # Your issues
+linear-for-ai issues list --fetch-all        # All workspace issues
+linear-for-ai issues show ENG-123            # Show specific issue
 ```
 
-#### Projects
+### Projects
 
 ```bash
-# List your projects (excludes completed by default)
-linear-for-ai projects list
-
-# Include completed projects
-linear-for-ai projects list --show-completed
-
-# List all projects in workspace
-linear-for-ai projects list --fetch-all
-
-# Show project details
-linear-for-ai projects show PROJECT-ID
-linear-for-ai projects show https://linear.app/team/project/my-project
-
-# Show project updates (issues and project updates since date)
+linear-for-ai projects list                  # Your projects (excludes completed)
+linear-for-ai projects list --show-completed # Include completed
+linear-for-ai projects show PROJECT-ID       # Show project details
 linear-for-ai projects show-updates --since 2025-01-01
-linear-for-ai projects show-updates PROJECT-ID --since 2025-01-01
 ```
 
-#### Initiatives
+### Initiatives
 
 ```bash
-# List your initiatives
-linear-for-ai initiatives list
-
-# List all initiatives
-linear-for-ai initiatives list --fetch-all
-
-# Show initiative details
-linear-for-ai initiatives show abc123def456
-linear-for-ai initiatives show https://linear.app/workspace/initiative/q4-platform-abc123def456
+linear-for-ai initiatives list               # Your initiatives
+linear-for-ai initiatives show abc123def456  # Show initiative details
 ```
 
-#### Notifications
+### Notifications
 
 ```bash
-# List recent notifications
-linear-for-ai notifications list
-
-# Limit results
-linear-for-ai notifications list --limit 10
+linear-for-ai notifications list             # Recent notifications
+linear-for-ai notifications list --limit 10  # Limit results
 ```
 
 ### Global Options
 
-```bash
---format <markdown|json>  # Output format (default: markdown)
---fetch-all               # Show all resources (default: only related to you)
---filter <json>           # Filter results using Linear's filter syntax
---fields <fields>         # Override default field selection
---limit <N>               # Pagination limit (default: 50)
---debug                   # Show debug information including API calls
---config <path>           # Custom config file path
---no-color                # Disable ANSI colors
--h, --help                # Show help message
--v, --version             # Show version
+```
+--format <markdown|json>   Output format (default: markdown)
+--fetch-all                Show all resources, not just yours
+--filter <json>            Filter using Linear's filter syntax
+--fields <fields>          Override field selection
+--limit <N>                Pagination limit (default: 50)
+--debug                    Show API calls
+-h, --help                 Show help
+-v, --version              Show version
 ```
 
 ### Filtering Behavior
 
-By default, list commands show only resources related to you:
-
-- **Issues**: Assigned to you, created by you, or subscribed to
-- **Projects**: Where you're the lead, creator, or a member (excludes completed)
-- **Initiatives**: Owned by you
-
-Use `--fetch-all` to see all resources in your workspace.
-
-### Output Formats
-
-#### Markdown (Default)
-
-Token-efficient tables for AI consumption:
-
-```
-## Issues (3 results)
-
-ID       Title              Status        Priority  URL
-------   -----------------  ------------  --------  --------------------------------
-ENG-123  Fix login bug      In Progress   High      https://linear.app/team/ENG-123
-ENG-124  Add dark mode      Todo          Medium    https://linear.app/team/ENG-124
-ENG-125  Update docs        Done          Low       https://linear.app/team/ENG-125
-```
-
-#### JSON
-
-Structured output for programs:
-
-```json
-{
-  "data": {
-    "issues": {
-      "nodes": [
-        {
-          "id": "1",
-          "identifier": "ENG-123",
-          "title": "Fix login bug",
-          "url": "https://linear.app/team/ENG-123"
-        }
-      ]
-    }
-  }
-}
-```
-
-### Examples
-
-```bash
-# Custom field selection
-linear-for-ai issues list --fields id,title,assignee.displayName,url
-
-# JSON output
-linear-for-ai issues show ENG-123 --format json
-
-# Filter issues by state
-linear-for-ai issues list --filter '{"state":{"name":{"eq":"In Progress"}}}'
-
-# Show project updates from the last 2 weeks
-linear-for-ai projects show-updates --since 2025-01-01
-
-# Debug mode to see API calls
-linear-for-ai issues list --debug
-```
-
-## Development
-
-### Prerequisites
-
-- [Deno 2.x](https://deno.land/) installed
-
-### Commands
-
-```bash
-# Run in development mode
-deno task dev issues list
-
-# Run tests
-deno task test
-
-# Run tests in watch mode
-deno task test:watch
-
-# Format code
-deno task fmt
-
-# Lint code
-deno task lint
-
-# Type check
-deno task check
-```
-
-### Project Structure
-
-```
-linear-for-ai/
-├── src/
-│   ├── cli.ts              # Main CLI entry point
-│   ├── commands/           # Command implementations
-│   │   └── issues.ts
-│   ├── lib/
-│   │   ├── graphql-client.ts   # GraphQL client
-│   │   ├── queries/            # Query builders
-│   │   ├── formatters/         # Output formatters
-│   │   ├── config.ts           # Config loader
-│   │   └── env.ts              # Environment loader
-│   └── types/              # TypeScript types
-├── tests/
-│   ├── lib/                # Unit tests
-│   ├── commands/           # Command tests
-│   └── integration/        # Integration tests
-├── docs/                   # Documentation
-├── scripts/                # Build scripts
-└── deno.json              # Deno configuration
-```
-
-### Running Tests
-
-```bash
-# All tests
-deno task test
-
-# Specific test file
-deno test tests/lib/config.test.ts
-
-# With coverage
-deno test --coverage=coverage
-```
-
-### Building
-
-```bash
-# Build standalone executable
-./scripts/build.sh
-
-# Or use Deno task
-deno task compile
-```
-
-## Architecture
-
-### Design Decisions
-
-1. **Deno**: Native TypeScript, built-in testing, single executable
-2. **Direct GraphQL**: Bypasses SDK limitations
-3. **Token-efficient output**: Minimizes AI token usage
-4. **Web URLs**: Enables human verification
-5. **Zero runtime dependencies**: Self-contained executable
-
-### Security
-
-- API keys redacted in logs (last 4 chars only)
-- Writes require explicit config and flags
-- HTTPS only
-- Proxy support
+By default, list commands show only resources related to you. Use `--fetch-all` to see all resources in your workspace.
 
 ## Troubleshooting
 
-**API key not working?** Verify with `echo $LINEAR_API_KEY` or run with `--debug`
+- **API key not working?** Run with `--debug` to verify
+- **Permission errors?** Run `chmod +x linear-for-ai`
+- **Behind proxy?** Set `HTTPS_PROXY=http://proxy.example.com:8080`
 
-**Permission errors?** Run `chmod +x ./dist/linear-for-ai`
+## Development
 
-**Behind proxy?** Set `export HTTPS_PROXY=http://proxy.example.com:8080`
-
-## Contributing
-
-1. Fork and create feature branch
-2. Add tests for changes
-3. Run `deno task test` and `deno task fmt`
-4. Commit: `git commit -m "feat: description"`
-5. Create Pull Request
-
-Code style: TypeScript strict mode, 100 char lines, single quotes, 2 spaces, descriptive names
+See [docs/development.md](docs/development.md) for development setup, building, testing, and contributing.
 
 ## License
 
 MIT
-
-## Credits
-
-Built with:
-
-- [Deno](https://deno.land/) - Modern JavaScript runtime
-- [Linear GraphQL API](https://linear.app/developers) - Linear's API
-
-Created by [Ramy Nasr](https://github.com/ramynasr)
