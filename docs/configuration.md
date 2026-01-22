@@ -30,13 +30,18 @@ LINEAR_API_KEY=lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ### Option 3: macOS Keychain (Recommended for macOS)
 
-On first run without a configured key, you'll be prompted to store it in Keychain.
+On first run without a configured key, you'll be prompted to store it in Keychain. This is the safest method.
 
-To manually add via command line:
+To manually add via command line (without exposing the key in shell history):
 
 ```bash
-security add-generic-password -s "linear-for-ai" -a "api-key" -w "lin_api_xxx" -U
+# This prompts for the password securely (not saved to history)
+security add-generic-password -s "linear-for-ai" -a "api-key" -w -U
 ```
+
+The `-w` flag without a value will prompt you to enter the password interactively.
+
+**Warning:** Do NOT pass the API key directly as an argument (e.g., `-w "lin_api_xxx"`) as it will be saved in your shell history file.
 
 Benefits:
 - Secure storage (encrypted by macOS)
