@@ -1,8 +1,11 @@
 import { load } from '@std/dotenv';
 import type { Environment } from '../types/config.ts';
+import { isKeychainAvailable, readFromKeychain } from './keychain.ts';
+import { isInteractive, runInteractiveSetup } from './setup.ts';
 
 /**
  * Load environment variables from .env file and system environment
+ * Falls back to macOS Keychain, then interactive setup if available
  */
 export async function loadEnvironment(): Promise<Environment> {
   // Load .env file if it exists (doesn't throw if missing)
@@ -12,9 +15,29 @@ export async function loadEnvironment(): Promise<Environment> {
     await load({ export: true, envPath: '.env' });
   }
 
-  const apiKey = Deno.env.get('LINEAR_API_KEY');
+  let apiKey = Deno.env.get('LINEAR_API_KEY');
+
+  // Fallback 1: Try Keychain on macOS (can be skipped for testing)
+  const skipKeychain = Deno.env.get('SKIP_KEYCHAIN_LOAD') === 'true';
+  if (!apiKey && !skipKeychain && isKeychainAvailable()) {
+    apiKey = await readFromKeychain() ?? undefined;
+  }
+
+  // Fallback 2: Interactive setup if TTY available
+  const skipInteractive = Deno.env.get('SKIP_INTERACTIVE_SETUP') === 'true';
+  if (!apiKey && !skipInteractive && isInteractive()) {
+    apiKey = await runInteractiveSetup();
+  }
+
   if (!apiKey) {
-    throw new Error('LINEAR_API_KEY environment variable is required');
+    // Provide helpful error message with all available options
+    const options = ['environment variable', '.env file'];
+    if (isKeychainAvailable()) {
+      options.push('Keychain');
+    }
+    throw new Error(
+      `LINEAR_API_KEY is required. Set it via ${options.join(', ')}, or run interactively to configure.`,
+    );
   }
 
   return {
