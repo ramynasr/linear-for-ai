@@ -34,15 +34,25 @@ export async function readFromKeychain(
     const { code, stdout } = await cmd.output();
 
     // Exit code 44 = errSecItemNotFound (key doesn't exist)
-    // Any other non-zero = error
+    if (code === 44) {
+      return null;
+    }
+
+    // Any other non-zero = unexpected error, log debug warning
     if (code !== 0) {
+      if (Deno.env.get('DEBUG') === 'true') {
+        console.error(`[DEBUG] Keychain read failed with exit code ${code}`);
+      }
       return null;
     }
 
     const password = new TextDecoder().decode(stdout).trim();
     return password || null;
-  } catch {
+  } catch (error) {
     // Handle spawn failures (e.g., security command not in PATH)
+    if (Deno.env.get('DEBUG') === 'true') {
+      console.error(`[DEBUG] Keychain command failed: ${(error as Error).message}`);
+    }
     return null;
   }
 }
