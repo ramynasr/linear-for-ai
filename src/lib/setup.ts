@@ -70,68 +70,118 @@ export async function writeToEnvFile(apiKey: string, envPath: string = '.env'): 
 }
 
 /**
+ * Restore terminal echo - used in finally blocks
+ */
+async function restoreEcho(): Promise<void> {
+  try {
+    const cmd = new Deno.Command('stty', { args: ['echo'], stdin: 'null' });
+    await cmd.output();
+  } catch {
+    // Ignore if stty not available
+  }
+}
+
+/**
  * Prompt user for input (hidden for passwords)
+ * Uses larger buffer and proper error handling for stdin
  */
 async function promptInput(message: string, hidden: boolean = false): Promise<string> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
-  await Deno.stdout.write(encoder.encode(message));
+  if (message) {
+    await Deno.stdout.write(encoder.encode(message));
+  }
+
+  let echoDisabled = false;
 
   if (hidden) {
     // Try to disable echo for hidden input
     try {
-      const cmd = new Deno.Command('stty', { args: ['-echo'], stdin: 'inherit' });
-      await cmd.output();
+      const cmd = new Deno.Command('stty', { args: ['-echo'], stdin: 'null' });
+      const result = await cmd.output();
+      echoDisabled = result.code === 0;
+
+      if (!echoDisabled) {
+        // Warn user that input may be visible
+        await Deno.stdout.write(
+          encoder.encode('\n(Warning: Could not hide input - your API key may be visible)\n'),
+        );
+      }
     } catch {
-      // Ignore if stty not available
+      // stty not available - warn user
+      await Deno.stdout.write(
+        encoder.encode('\n(Warning: Could not hide input - your API key may be visible)\n'),
+      );
     }
   }
 
-  const buf = new Uint8Array(1024);
-  const n = await Deno.stdin.read(buf);
-  const input = decoder.decode(buf.subarray(0, n ?? 0)).trim();
+  try {
+    // Use larger buffer to handle long API keys (4096 bytes)
+    const buf = new Uint8Array(4096);
+    const n = await Deno.stdin.read(buf);
 
-  if (hidden) {
-    // Re-enable echo and print newline
-    try {
-      const cmd = new Deno.Command('stty', { args: ['echo'], stdin: 'inherit' });
-      await cmd.output();
-    } catch {
-      // Ignore if stty not available
+    // Handle EOF/stdin closed
+    if (n === null) {
+      throw new Error('Setup cancelled (stdin closed)');
     }
-    await Deno.stdout.write(encoder.encode('\n'));
-  }
 
-  return input;
+    const input = decoder.decode(buf.subarray(0, n)).trim();
+    return input;
+  } finally {
+    // Always restore echo if we disabled it (even on error)
+    if (hidden && echoDisabled) {
+      await restoreEcho();
+      await Deno.stdout.write(encoder.encode('\n'));
+    }
+  }
 }
 
 /**
- * Prompt user for storage choice
+ * Prompt user for storage choice with input validation
  * @returns 'keychain' | 'env'
  */
 async function promptStorageChoice(): Promise<'keychain' | 'env'> {
   const encoder = new TextEncoder();
 
   if (isKeychainAvailable()) {
-    await Deno.stdout.write(
-      encoder.encode(`
+    // Loop until valid input on macOS
+    while (true) {
+      await Deno.stdout.write(
+        encoder.encode(`
 Where would you like to store your API key?
 [1] macOS Keychain (recommended)
 [2] .env file in current directory
 
 Enter choice (1 or 2): `),
-    );
+      );
 
-    const choice = await promptInput('');
-    return choice === '2' ? 'env' : 'keychain';
-  } else {
-    await Deno.stdout.write(encoder.encode('\nStore API key in .env file? (y/n): '));
-    const choice = await promptInput('');
-    if (choice.toLowerCase() !== 'y' && choice.toLowerCase() !== 'yes') {
-      throw new Error('Setup cancelled by user');
+      const choice = (await promptInput('')).trim();
+
+      if (choice === '1') {
+        return 'keychain';
+      }
+      if (choice === '2') {
+        return 'env';
+      }
+
+      await Deno.stdout.write(encoder.encode('\nInvalid choice. Please enter 1 or 2.\n'));
     }
-    return 'env';
+  } else {
+    // Loop until valid input on non-macOS
+    while (true) {
+      await Deno.stdout.write(encoder.encode('\nStore API key in .env file? (y/n): '));
+      const choice = (await promptInput('')).trim().toLowerCase();
+
+      if (choice === 'y' || choice === 'yes') {
+        return 'env';
+      }
+      if (choice === 'n' || choice === 'no') {
+        throw new Error('Setup cancelled by user');
+      }
+
+      await Deno.stdout.write(encoder.encode('\nInvalid choice. Please enter y or n.\n'));
+    }
   }
 }
 
@@ -190,9 +240,15 @@ export async function runInteractiveSetup(): Promise<string> {
       await writeToEnvFile(apiKey);
     }
   } catch (error) {
-    const altInstructions = storage === 'keychain'
-      ? 'Try using a .env file or add LINEAR_API_KEY to your shell profile.'
-      : 'Try using Keychain (macOS) or add LINEAR_API_KEY to your shell profile.';
+    // Platform-specific error message
+    let altInstructions: string;
+    if (storage === 'keychain') {
+      altInstructions = 'Try using a .env file or add LINEAR_API_KEY to your shell profile.';
+    } else if (isKeychainAvailable()) {
+      altInstructions = 'Try using Keychain (macOS) or add LINEAR_API_KEY to your shell profile.';
+    } else {
+      altInstructions = 'Try adding LINEAR_API_KEY to your shell profile (e.g., ~/.bashrc, ~/.zshrc).';
+    }
 
     throw new Error(
       `Failed to save API key to ${storage === 'keychain' ? 'Keychain' : '.env file'}: ${

@@ -17,8 +17,9 @@ export async function loadEnvironment(): Promise<Environment> {
 
   let apiKey = Deno.env.get('LINEAR_API_KEY');
 
-  // Fallback 1: Try Keychain on macOS
-  if (!apiKey && isKeychainAvailable()) {
+  // Fallback 1: Try Keychain on macOS (can be skipped for testing)
+  const skipKeychain = Deno.env.get('SKIP_KEYCHAIN_LOAD') === 'true';
+  if (!apiKey && !skipKeychain && isKeychainAvailable()) {
     apiKey = await readFromKeychain() ?? undefined;
   }
 
@@ -29,7 +30,14 @@ export async function loadEnvironment(): Promise<Environment> {
   }
 
   if (!apiKey) {
-    throw new Error('LINEAR_API_KEY environment variable is required');
+    // Provide helpful error message with all available options
+    const options = ['environment variable', '.env file'];
+    if (isKeychainAvailable()) {
+      options.push('Keychain');
+    }
+    throw new Error(
+      `LINEAR_API_KEY is required. Set it via ${options.join(', ')}, or run interactively to configure.`,
+    );
   }
 
   return {

@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import { assertEquals, assertExists, assertRejects, assertStringIncludes } from '@std/assert';
 import { loadEnvironment } from '../../src/lib/env.ts';
 
 Deno.test('loadEnvironment - loads API key from environment', async () => {
@@ -12,8 +12,9 @@ Deno.test('loadEnvironment - throws when API key missing', async () => {
   // Save original value
   const original = Deno.env.get('LINEAR_API_KEY');
 
-  // Skip .env loading and interactive setup, then delete the key
+  // Skip all fallbacks and delete the key
   Deno.env.set('SKIP_DOTENV_LOAD', 'true');
+  Deno.env.set('SKIP_KEYCHAIN_LOAD', 'true');
   Deno.env.set('SKIP_INTERACTIVE_SETUP', 'true');
   Deno.env.delete('LINEAR_API_KEY');
 
@@ -22,10 +23,12 @@ Deno.test('loadEnvironment - throws when API key missing', async () => {
     throw new Error('Should have thrown');
   } catch (error) {
     assertExists(error);
-    assertEquals((error as Error).message, 'LINEAR_API_KEY environment variable is required');
+    // Error message now includes helpful options
+    assertStringIncludes((error as Error).message, 'LINEAR_API_KEY is required');
   } finally {
     // Restore original value
     Deno.env.delete('SKIP_DOTENV_LOAD');
+    Deno.env.delete('SKIP_KEYCHAIN_LOAD');
     Deno.env.delete('SKIP_INTERACTIVE_SETUP');
     if (original) {
       Deno.env.set('LINEAR_API_KEY', original);
@@ -64,6 +67,64 @@ Deno.test('loadEnvironment - falls back to Keychain on macOS', async () => {
     );
   } finally {
     Deno.env.delete('SKIP_DOTENV_LOAD');
+    Deno.env.delete('SKIP_INTERACTIVE_SETUP');
+    if (original) {
+      Deno.env.set('LINEAR_API_KEY', original);
+    }
+  }
+});
+
+Deno.test('loadEnvironment - SKIP_KEYCHAIN_LOAD skips Keychain fallback', async () => {
+  if (Deno.build.os !== 'darwin') {
+    return; // Skip on non-macOS
+  }
+
+  const original = Deno.env.get('LINEAR_API_KEY');
+
+  // Skip all fallbacks
+  Deno.env.set('SKIP_DOTENV_LOAD', 'true');
+  Deno.env.set('SKIP_KEYCHAIN_LOAD', 'true');
+  Deno.env.set('SKIP_INTERACTIVE_SETUP', 'true');
+  Deno.env.delete('LINEAR_API_KEY');
+
+  try {
+    // Should throw because Keychain is skipped
+    await assertRejects(
+      () => loadEnvironment(),
+      Error,
+      'LINEAR_API_KEY',
+    );
+  } finally {
+    Deno.env.delete('SKIP_DOTENV_LOAD');
+    Deno.env.delete('SKIP_KEYCHAIN_LOAD');
+    Deno.env.delete('SKIP_INTERACTIVE_SETUP');
+    if (original) {
+      Deno.env.set('LINEAR_API_KEY', original);
+    }
+  }
+});
+
+Deno.test('loadEnvironment - error message mentions available options', async () => {
+  const original = Deno.env.get('LINEAR_API_KEY');
+
+  Deno.env.set('SKIP_DOTENV_LOAD', 'true');
+  Deno.env.set('SKIP_KEYCHAIN_LOAD', 'true');
+  Deno.env.set('SKIP_INTERACTIVE_SETUP', 'true');
+  Deno.env.delete('LINEAR_API_KEY');
+
+  try {
+    await loadEnvironment();
+    throw new Error('Should have thrown');
+  } catch (error) {
+    const message = (error as Error).message;
+    assertStringIncludes(message, 'environment variable');
+    assertStringIncludes(message, '.env file');
+    if (Deno.build.os === 'darwin') {
+      assertStringIncludes(message, 'Keychain');
+    }
+  } finally {
+    Deno.env.delete('SKIP_DOTENV_LOAD');
+    Deno.env.delete('SKIP_KEYCHAIN_LOAD');
     Deno.env.delete('SKIP_INTERACTIVE_SETUP');
     if (original) {
       Deno.env.set('LINEAR_API_KEY', original);

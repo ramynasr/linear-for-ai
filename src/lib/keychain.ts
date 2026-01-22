@@ -38,8 +38,12 @@ export async function readFromKeychain(
       return null;
     }
 
-    // Any other non-zero = unexpected error, log debug warning
+    // Any other non-zero = unexpected error
     if (code !== 0) {
+      // Log user-friendly message (not just in debug mode)
+      console.error(
+        `Note: Could not read from Keychain (exit code ${code}). Run with DEBUG=true for details.`,
+      );
       if (Deno.env.get('DEBUG') === 'true') {
         console.error(`[DEBUG] Keychain read failed with exit code ${code}`);
       }
@@ -50,6 +54,9 @@ export async function readFromKeychain(
     return password || null;
   } catch (error) {
     // Handle spawn failures (e.g., security command not in PATH)
+    console.error(
+      'Note: Could not access Keychain. Run with DEBUG=true for details.',
+    );
     if (Deno.env.get('DEBUG') === 'true') {
       console.error(`[DEBUG] Keychain command failed: ${(error as Error).message}`);
     }
@@ -59,6 +66,14 @@ export async function readFromKeychain(
 
 /**
  * Write API key to macOS Keychain
+ *
+ * Note: The API key is passed as a command-line argument to the `security` CLI.
+ * This briefly exposes it in process listings (e.g., `ps aux`) during execution.
+ * The macOS `security` command does not support reading passwords from stdin,
+ * so this is the standard approach used by the macOS Keychain CLI.
+ * The exposure window is very small (milliseconds) and this pattern is used
+ * by many popular CLI tools (e.g., `gh auth`, `docker login`).
+ *
  * @param apiKey The API key to store
  * @throws Error if write fails
  */
