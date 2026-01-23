@@ -44,8 +44,8 @@ export function parseArgs(args: string[]): ParsedCommand {
   // Convert limit to number if provided
   const limit = parsed.limit ? parseInt(parsed.limit, 10) : undefined;
 
-  // Resource-level help: resource provided, --help flag, but no action
-  const showResourceHelp = parsed.help && !!resource && !action;
+  // Resource-level help: resource provided with --help flag (with or without action)
+  const showResourceHelp = parsed.help && !!resource;
   // General help: --help without resource, or no resource and no version
   const showHelp = (parsed.help && !resource) || (!resource && !parsed.version);
 
