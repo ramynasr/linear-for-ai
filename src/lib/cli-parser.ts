@@ -7,6 +7,7 @@ export interface ParsedCommand {
   args: string[];
   options: GlobalOptions & Record<string, unknown>;
   showHelp?: boolean;
+  showResourceHelp?: boolean;
   showVersion?: boolean;
 }
 
@@ -43,6 +44,11 @@ export function parseArgs(args: string[]): ParsedCommand {
   // Convert limit to number if provided
   const limit = parsed.limit ? parseInt(parsed.limit, 10) : undefined;
 
+  // Resource-level help: resource provided, --help flag, but no action
+  const showResourceHelp = parsed.help && !!resource && !action;
+  // General help: --help without resource, or no resource and no version
+  const showHelp = (parsed.help && !resource) || (!resource && !parsed.version);
+
   return {
     resource,
     action,
@@ -63,7 +69,8 @@ export function parseArgs(args: string[]): ParsedCommand {
       showAllIssueUpdates: parsed['show-all-issue-updates'],
       showCompleted: parsed['show-completed'],
     },
-    showHelp: parsed.help || (!resource && !parsed.version),
+    showHelp,
+    showResourceHelp,
     showVersion: parsed.version,
   };
 }

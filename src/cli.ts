@@ -5,7 +5,7 @@ import { loadEnvironment } from './lib/env.ts';
 import { loadConfig } from './lib/config.ts';
 import { GraphQLClient } from './lib/graphql-client.ts';
 import { CommandFactory } from './commands/factory.ts';
-import { HELP_TEXT, VERSION } from './lib/help.ts';
+import { getResourceHelp, HELP_TEXT, VERSION } from './lib/help.ts';
 import type { CommandContext } from './types/cli.ts';
 
 async function main() {
@@ -15,6 +15,19 @@ async function main() {
   if (parsed.showHelp) {
     console.log(HELP_TEXT);
     Deno.exit(0);
+  }
+
+  // Show resource-specific help
+  if (parsed.showResourceHelp && parsed.resource) {
+    const resourceHelp = getResourceHelp(parsed.resource);
+    if (resourceHelp) {
+      console.log(resourceHelp);
+      Deno.exit(0);
+    } else {
+      console.error(`Unknown resource: ${parsed.resource}`);
+      console.log(HELP_TEXT);
+      Deno.exit(1);
+    }
   }
 
   // Show version
@@ -35,10 +48,23 @@ async function main() {
     });
 
     // Validate resource and action are present
-    if (!parsed.resource || !parsed.action) {
-      console.error('Error: Resource and action are required');
+    if (!parsed.resource) {
+      console.error('Error: Resource is required');
       console.log(HELP_TEXT);
       Deno.exit(1);
+    }
+
+    // If resource provided but no action, show resource-specific help
+    if (!parsed.action) {
+      const resourceHelp = getResourceHelp(parsed.resource);
+      if (resourceHelp) {
+        console.log(resourceHelp);
+        Deno.exit(0);
+      } else {
+        console.error(`Unknown resource: ${parsed.resource}`);
+        console.log(HELP_TEXT);
+        Deno.exit(1);
+      }
     }
 
     // Build command context

@@ -40,3 +40,37 @@ Deno.test('CommandFactory.get - returns undefined for unknown action', () => {
   const handler = CommandFactory.get('issues', 'unknown');
   assertEquals(handler, undefined);
 });
+
+Deno.test('CommandFactory.getResourceMetadata - returns metadata for valid resource', () => {
+  const metadata = CommandFactory.getResourceMetadata('issues');
+  assertEquals(metadata?.description, 'Manage and query issues');
+  assertEquals(Object.keys(metadata?.actions || {}), ['list', 'show']);
+});
+
+Deno.test('CommandFactory.getResourceMetadata - returns metadata for projects', () => {
+  const metadata = CommandFactory.getResourceMetadata('projects');
+  assertEquals(metadata?.description, 'Manage and query projects');
+  assertEquals(Object.keys(metadata?.actions || {}), ['list', 'show', 'show-updates']);
+});
+
+Deno.test('CommandFactory.getResourceMetadata - returns undefined for unknown resource', () => {
+  const metadata = CommandFactory.getResourceMetadata('unknown');
+  assertEquals(metadata, undefined);
+});
+
+Deno.test('CommandFactory.getAvailableResources - returns all resources', () => {
+  const resources = CommandFactory.getAvailableResources();
+  assertEquals(resources.includes('issues'), true);
+  assertEquals(resources.includes('projects'), true);
+  assertEquals(resources.includes('initiatives'), true);
+  assertEquals(resources.includes('notifications'), true);
+});
+
+Deno.test('CommandFactory.hasResource - returns true for valid resource', () => {
+  assertEquals(CommandFactory.hasResource('issues'), true);
+  assertEquals(CommandFactory.hasResource('projects'), true);
+});
+
+Deno.test('CommandFactory.hasResource - returns false for unknown resource', () => {
+  assertEquals(CommandFactory.hasResource('unknown'), false);
+});

@@ -1,3 +1,5 @@
+import { CommandFactory } from '../commands/factory.ts';
+
 export const HELP_TEXT = `
 linear-for-ai - CLI tool for AI agents to interact with Linear
 
@@ -79,3 +81,68 @@ For more information: https://github.com/ramynasr/linear-for-ai
 import denoConfig from '../../deno.json' with { type: 'json' };
 
 export const VERSION = denoConfig.version;
+
+/**
+ * Generate help text for a specific resource
+ */
+export function getResourceHelp(resource: string): string | null {
+  const metadata = CommandFactory.getResourceMetadata(resource);
+  if (!metadata) {
+    return null;
+  }
+
+  const lines: string[] = [];
+
+  // Resource header
+  lines.push(`linear-for-ai ${resource} - ${metadata.description}`);
+  lines.push('');
+  lines.push('USAGE:');
+  lines.push(`  linear-for-ai ${resource} <action> [options]`);
+  lines.push('');
+  lines.push('ACTIONS:');
+
+  // List all actions with their descriptions
+  const actionNames = Object.keys(metadata.actions);
+  const maxActionLength = Math.max(...actionNames.map((a) => a.length));
+
+  for (const [actionName, actionMeta] of Object.entries(metadata.actions)) {
+    const paddedName = actionName.padEnd(maxActionLength + 2);
+    lines.push(`  ${paddedName}${actionMeta.description}`);
+  }
+
+  // Detailed action information
+  lines.push('');
+  lines.push('ACTION DETAILS:');
+
+  for (const [actionName, actionMeta] of Object.entries(metadata.actions)) {
+    lines.push('');
+    lines.push(`  ${resource} ${actionName}`);
+    lines.push(`    ${actionMeta.description}`);
+    lines.push('');
+    lines.push(`    Usage: ${actionMeta.usage}`);
+
+    if (actionMeta.options && actionMeta.options.length > 0) {
+      lines.push('');
+      lines.push('    Options:');
+      const maxOptLength = Math.max(...actionMeta.options.map((o) => o.name.length));
+      for (const opt of actionMeta.options) {
+        const paddedOpt = opt.name.padEnd(maxOptLength + 2);
+        lines.push(`      ${paddedOpt}${opt.description}`);
+      }
+    }
+  }
+
+  // Global options reminder
+  lines.push('');
+  lines.push('GLOBAL OPTIONS:');
+  lines.push('  --format <markdown|json>  Output format (default: markdown)');
+  lines.push('  --debug                   Show debug information');
+  lines.push('  --config <path>           Custom config file path');
+  lines.push('  --no-color                Disable ANSI colors');
+  lines.push('  -h, --help                Show help message');
+
+  lines.push('');
+  lines.push('For more information: https://github.com/ramynasr/linear-for-ai');
+
+  return lines.join('\n');
+}

@@ -25,3 +25,24 @@ Deno.test('parseArgs - handles help flag', () => {
   const result = parseArgs(['--help']);
   assertEquals(result.showHelp, true);
 });
+
+Deno.test('parseArgs - handles resource-level help', () => {
+  const result = parseArgs(['projects', '--help']);
+  assertEquals(result.resource, 'projects');
+  assertEquals(result.showResourceHelp, true);
+  assertEquals(result.showHelp, false);
+});
+
+Deno.test('parseArgs - handles resource-level help with -h alias', () => {
+  const result = parseArgs(['issues', '-h']);
+  assertEquals(result.resource, 'issues');
+  assertEquals(result.showResourceHelp, true);
+  assertEquals(result.showHelp, false);
+});
+
+Deno.test('parseArgs - does not set showResourceHelp when action is provided', () => {
+  const result = parseArgs(['issues', 'list', '--help']);
+  assertEquals(result.resource, 'issues');
+  assertEquals(result.action, 'list');
+  assertEquals(result.showResourceHelp, false);
+});
