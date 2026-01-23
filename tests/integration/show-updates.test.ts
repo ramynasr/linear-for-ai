@@ -22,5 +22,5 @@ Deno.test('show-updates integration - displays help text', async () => {
   assertEquals(code, 0);
   // Should show usage with optional argument
   assertStringIncludes(output, 'show-updates');
-  assertStringIncludes(output, 'idOrUrl');
+  assertStringIncludes(output, 'id|url');
 });

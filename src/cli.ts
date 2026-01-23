@@ -5,7 +5,7 @@ import { loadEnvironment } from './lib/env.ts';
 import { loadConfig } from './lib/config.ts';
 import { GraphQLClient } from './lib/graphql-client.ts';
 import { CommandFactory } from './commands/factory.ts';
-import { HELP_TEXT, VERSION } from './lib/help.ts';
+import { getResourceHelp, HELP_TEXT, VERSION } from './lib/help.ts';
 import type { CommandContext } from './types/cli.ts';
 
 async function main() {
@@ -17,10 +17,32 @@ async function main() {
     Deno.exit(0);
   }
 
+  // Show resource-specific help (--help with resource, or resource without action)
+  if (parsed.showResourceHelp || (parsed.resource && !parsed.action)) {
+    if (parsed.resource) {
+      const resourceHelp = getResourceHelp(parsed.resource);
+      if (resourceHelp) {
+        console.log(resourceHelp);
+        Deno.exit(0);
+      } else {
+        console.error(`Unknown resource: ${parsed.resource}`);
+        console.log(HELP_TEXT);
+        Deno.exit(1);
+      }
+    }
+  }
+
   // Show version
   if (parsed.showVersion) {
     console.log(`linear-for-ai v${VERSION}`);
     Deno.exit(0);
+  }
+
+  // Validate resource and action are present
+  if (!parsed.resource || !parsed.action) {
+    console.error('Error: Resource and action are required');
+    console.log(HELP_TEXT);
+    Deno.exit(1);
   }
 
   try {
@@ -33,13 +55,6 @@ async function main() {
       debug: parsed.options.debug,
       proxy: env.httpsProxy || env.httpProxy,
     });
-
-    // Validate resource and action are present
-    if (!parsed.resource || !parsed.action) {
-      console.error('Error: Resource and action are required');
-      console.log(HELP_TEXT);
-      Deno.exit(1);
-    }
 
     // Build command context
     const context: CommandContext = {
